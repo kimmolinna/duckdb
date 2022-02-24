@@ -338,7 +338,3 @@ __nvm
 # Zig files
 zig-out/*
 zig-cache/*
-*.zig
-
-# .db files
-*.db
