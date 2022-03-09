@@ -324,8 +324,7 @@ pub fn build(b: *std.build.Builder) !void {
     httpfs_extension.addIncludeDir("third_party/re2");
     httpfs_extension.addIncludeDir("third_party/tdigest");
     httpfs_extension.addIncludeDir("third_party/utf8proc/include");
-    httpfs_extension.addIncludeDir("/usr/include/x86_64-linux-gnu");
-    httpfs_extension.addIncludeDir("/usr/include");
+    httpfs_extension.addIncludeDir("third_party");
     httpfs_extension.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
     httpfs_extension.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
     httpfs_extension.defineCMacro("BUILD_ICU_EXTENSION", "ON");
@@ -362,16 +361,6 @@ pub fn build(b: *std.build.Builder) !void {
             try duckdb_sources.append(b.dupe(file));
         }  
     }
-
-//    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-//    defer arena.deinit();
-//    const allocator = arena.allocator(); 
-//    const result = std.ChildProcess.exec(.{
-//        .allocator = allocator,
-//        .argv =&[_][]const u8 {"git", "log", "-1", "--format=%h"},
-//        .max_output_bytes = 1_000
-//        });
-//    defer allocator.free(result.stdout);
   
     const duckdb_static = b.addStaticLibrary("duckdb_static", null);  
     duckdb_static.addIncludeDir("src/include");
@@ -411,23 +400,7 @@ pub fn build(b: *std.build.Builder) !void {
     duckdb.defineCMacro("DUCKDB",null);
     duckdb.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
     duckdb.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
-//    duckdb.addIncludeDir("src/include");
-//    duckdb.addIncludeDir("third_party/concurrentqueue");
-//    duckdb.addIncludeDir("third_party/fast_float");
-//    duckdb.addIncludeDir("third_party/fastpforlib");
-//    duckdb.addIncludeDir("third_party/fmt/include");    
-//    duckdb.addIncludeDir("third_party/httplib");
-//    duckdb.addIncludeDir("third_party/hyperloglog");
-//    duckdb.addIncludeDir("third_party/libpg_query/include");
-//    duckdb.addIncludeDir("third_party/miniparquet");
-//    duckdb.addIncludeDir("third_party/miniz");
-//    duckdb.addIncludeDir("third_party/pcg");
-//    duckdb.addIncludeDir("third_party/re2");
-//    duckdb.addIncludeDir("third_party/tdigest");
-//    duckdb.addIncludeDir("third_party/utf8proc/include");
-//    duckdb.addIncludeDir("openssl/include");
-    duckdb.addIncludeDir("/usr/include/x86_64-linux-gnu");
-    duckdb.addIncludeDir("/usr/include");
+    duckdb.addIncludeDir("third_party");
     duckdb.linkLibCpp();
     duckdb.linkLibrary(duckdb_re2);
     duckdb.linkLibrary(fastpforlib);
@@ -441,8 +414,14 @@ pub fn build(b: *std.build.Builder) !void {
     duckdb.linkLibrary(pg_query);    
     duckdb.linkLibrary(utf8proc);
     duckdb.linkSystemLibrary("c");
-    duckdb.linkSystemLibrary("ssl");
-    duckdb.linkSystemLibrary("crypto");
+    if (target.isWindows()){
+        duckdb.addLibPath("third_party/openssl/win64/lib");    
+        duckdb.linkSystemLibrary("libssl");
+        duckdb.linkSystemLibrary("libcrypto");
+    }else{
+        duckdb.linkSystemLibrary("ssl");
+        duckdb.linkSystemLibrary("crypto");
+    }
     duckdb.setBuildMode(mode);
     duckdb.setTarget(target);
     duckdb.strip = true;
@@ -513,8 +492,7 @@ pub fn build(b: *std.build.Builder) !void {
     shell.addIncludeDir("third_party/utf8proc/include");
     shell.addIncludeDir("tools/shell/include");
     shell.addIncludeDir("tools/sqlite3_api_wrapper/include");
-    shell.addIncludeDir("/usr/include/x86_64-linux-gnu");
-    shell.addIncludeDir("/usr/include");
+    shell.addIncludeDir("third_party");
     shell.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
     shell.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
     shell.defineCMacro("BUILD_ICU_EXTENSION", "ON");
@@ -532,8 +510,6 @@ pub fn build(b: *std.build.Builder) !void {
     shell.linkLibrary(httpfs_extension);
     shell.linkLibrary(pg_query);    
     shell.linkLibrary(utf8proc);
-    shell.linkSystemLibrary("ssl");
-    shell.linkSystemLibrary("crypto");
     shell.linkLibrary(sqlite3_api_wrapper_static);
     shell.setBuildMode(mode);
     shell.setTarget(target);
@@ -542,10 +518,16 @@ pub fn build(b: *std.build.Builder) !void {
     shell.linkLibC();    
     shell.addCSourceFile("tools/shell/shell.c", &.{});
     if (!target.isWindows()){
+        shell.linkSystemLibrary("ssl");
+        shell.linkSystemLibrary("crypto");
         shell.linkLibCpp();
         shell.addCSourceFile(
             "tools/shell/linenoise.cpp",&.{});
         shell.defineCMacro("HAVE_LINENOISE", "1");
+    }else{
+        shell.addLibPath("third_party/openssl/win64/lib");    
+        shell.linkSystemLibrary("libssl");
+        shell.linkSystemLibrary("libcrypto");
     }
     shell.install();
  }
