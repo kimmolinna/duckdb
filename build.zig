@@ -383,8 +383,6 @@ pub fn build(b: *std.build.Builder) !void {
     duckdb_static.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
     duckdb_static.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
     duckdb_static.defineCMacro("DISABLE_DUCKDB_REMOTE_INSTALL", null);
-    duckdb_static.defineCMacroRaw("DUCKDB_SOURCE_ID=\"\"\"fb5334e05\"\"\"");
-    duckdb_static.defineCMacroRaw("DUCKDB_VERSION=\"\"\"v0.3.3-dev843\"\"\"");
     duckdb_static.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
     duckdb_static.defineCMacro("BUILD_ICU_EXTENSION", "ON");
     duckdb_static.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
@@ -414,11 +412,26 @@ pub fn build(b: *std.build.Builder) !void {
     duckdb.linkLibrary(httpfs_extension);
     duckdb.linkLibrary(pg_query);    
     duckdb.linkLibrary(utf8proc);
+    duckdb.linkLibC();
     duckdb.linkSystemLibrary("c");
     if (target.isWindows()){
-        duckdb.addLibPath("third_party/openssl/win64/lib");    
+        duckdb.addLibPath("third_party/win64/lib");    
         duckdb.linkSystemLibrary("libssl");
         duckdb.linkSystemLibrary("libcrypto");
+        duckdb.step.dependOn(
+            &b.addInstallFileWithDir(
+                .{.path = "third_party/win64/libssl-3-x64.dll"},
+                .bin,
+                "libssl-3-x64.dll",
+            ).step
+        );
+        duckdb.step.dependOn(
+            &b.addInstallFileWithDir(
+                .{.path = "third_party/win64/libcrypto-3-x64.dll"},
+                .bin,
+                "libssl-3-x64.dll",
+            ).step
+        );
     }else{
         duckdb.linkSystemLibrary("ssl");
         duckdb.linkSystemLibrary("crypto");
@@ -526,7 +539,7 @@ pub fn build(b: *std.build.Builder) !void {
             "tools/shell/linenoise.cpp",&.{});
         shell.defineCMacro("HAVE_LINENOISE", "1");
     }else{
-        shell.addLibPath("third_party/openssl/win64/lib");    
+        shell.addLibPath("third_party/win64/lib");    
         shell.linkSystemLibrary("libssl");
         shell.linkSystemLibrary("libcrypto");
     }
