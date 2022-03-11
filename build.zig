@@ -429,7 +429,7 @@ pub fn build(b: *std.build.Builder) !void {
             &b.addInstallFileWithDir(
                 .{.path = "third_party/win64/libcrypto-3-x64.dll"},
                 .bin,
-                "libssl-3-x64.dll",
+                "libcrypto-3-x64.dll",
             ).step
         );
     }else{
