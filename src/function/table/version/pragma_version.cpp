@@ -1,5 +1,6 @@
 #include "duckdb/function/table/system_functions.hpp"
 #include "duckdb/main/database.hpp"
+#include "duckdb/function/table/version.hpp"
 
 #include <cstdint>
 
@@ -49,19 +50,11 @@ idx_t DuckDB::StandardVectorSize() {
 }
 
 const char *DuckDB::SourceID() {
-	const char * source = "source";
-	#ifdef DUCKDB_SOURCE_ID
-		source = DUCKDB_SOURCE_ID;
-	#endif 
-	return source;
+	return DUCKDB_SOURCE;
 }
 
 const char *DuckDB::LibraryVersion() {
-	const char * version = "version";
-	#ifdef DUCKDB_VERSION
-		version = DUCKDB_VERSION;
-	#endif 
-	return version;
+	return DUCKDB_VERSION_STRING;
 }
 
 string DuckDB::Platform() {
