@@ -49,11 +49,19 @@ idx_t DuckDB::StandardVectorSize() {
 }
 
 const char *DuckDB::SourceID() {
-	return DUCKDB_SOURCE_ID;
+	const char * source = "source";
+	#ifdef DUCKDB_SOURCE_ID
+		source = DUCKDB_SOURCE_ID;
+	#endif 
+	return source;
 }
 
 const char *DuckDB::LibraryVersion() {
-	return DUCKDB_VERSION;
+	const char * version = "version";
+	#ifdef DUCKDB_VERSION
+		version = DUCKDB_VERSION;
+	#endif 
+	return version;
 }
 
 string DuckDB::Platform() {

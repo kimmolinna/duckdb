@@ -30,7 +30,7 @@ pub fn build(b: *std.build.Builder) !void {
     fastpforlib.setBuildMode(mode);
     fastpforlib.setTarget(target);
     fastpforlib.strip = true;
-    fastpforlib.addCSourceFile("third_party/fastpforlib/bitpacking.cpp", &.{});
+    fastpforlib.addCSourceFile("third_party/fastpforlib/bitpacking.cpp", &.{"-std=c++11"});
     fastpforlib.install();
 
     const fmt = b.addStaticLibrary("fmt", null);
@@ -52,7 +52,7 @@ pub fn build(b: *std.build.Builder) !void {
     fmt.setBuildMode(mode);
     fmt.setTarget(target);
     fmt.strip = true;
-    fmt.addCSourceFile("third_party/fmt/format.cc", &.{});
+    fmt.addCSourceFile("third_party/fmt/format.cc", &.{"-std=c++11"});
     fmt.install();
 
     const hyperloglog = b.addStaticLibrary("hyperloglog", null);
@@ -76,7 +76,7 @@ pub fn build(b: *std.build.Builder) !void {
     hyperloglog.addCSourceFiles(&.{
         "third_party/hyperloglog/hyperloglog.cpp",
         "third_party/hyperloglog/sds.cpp", 
-    }, &.{});
+    }, &.{"-std=c++11"});
     hyperloglog.install();
 
     const pg_query = b.addStaticLibrary("pg_query", null);
@@ -109,7 +109,7 @@ pub fn build(b: *std.build.Builder) !void {
         "third_party/libpg_query/src_backend_parser_scan.cpp",
         "third_party/libpg_query/src_backend_parser_scansup.cpp",
         "third_party/libpg_query/src_common_keywords.cpp",
-    }, &.{});
+    }, &.{"-std=c++11"});
     pg_query.install();
    
     const miniz = b.addStaticLibrary("miniz", null);
@@ -130,7 +130,7 @@ pub fn build(b: *std.build.Builder) !void {
     miniz.setBuildMode(mode);
     miniz.setTarget(target);
     miniz.strip = true;
-    miniz.addCSourceFile("third_party/miniz/miniz.cpp", &.{});
+    miniz.addCSourceFile("third_party/miniz/miniz.cpp", &.{"-std=c++11"});
     miniz.install();
 
     const duckdb_re2 = b.addStaticLibrary("duckdb_re2", null);
@@ -182,7 +182,7 @@ pub fn build(b: *std.build.Builder) !void {
         "third_party/re2/re2/unicode_groups.cc",
         "third_party/re2/util/rune.cc",
         "third_party/re2/util/strutil.cc",
-    }, &.{});
+    }, &.{"-std=c++11"});
     duckdb_re2.install();
 
     const utf8proc = b.addStaticLibrary("utf8proc", null);
@@ -206,7 +206,7 @@ pub fn build(b: *std.build.Builder) !void {
     utf8proc.addCSourceFiles(&.{
         "third_party/utf8proc/utf8proc_wrapper.cpp",
         "third_party/utf8proc/utf8proc.cpp", 
-    }, &.{});
+    }, &.{"-std=c++11"});
     utf8proc.install();
 
     const parquet_extension = b.addStaticLibrary("parquet_extension", null);
@@ -271,7 +271,7 @@ pub fn build(b: *std.build.Builder) !void {
         "third_party/zstd/decompress/zstd_ddict.cpp",
         "third_party/zstd/decompress/zstd_decompress_block.cpp",
         "third_party/zstd/decompress/zstd_decompress.cpp",
-    }, &.{});
+    }, &.{"-std=c++11"});
     parquet_extension.install();
 
     const icu_extension = b.addStaticLibrary("icu_extension", null);
@@ -303,7 +303,7 @@ pub fn build(b: *std.build.Builder) !void {
         "extension/icu/icu-datesub.cpp",
         "extension/icu/icu-datefunc.cpp",
         "extension/icu/icu-dateadd.cpp",
-    }, &.{});
+    }, &.{"-std=c++11"});
     icu_extension.install();
 
     const httpfs_extension = b.addStaticLibrary("httpfs_extension", null);
@@ -339,7 +339,7 @@ pub fn build(b: *std.build.Builder) !void {
         "extension/httpfs/crypto.cpp",
         "extension/httpfs/httpfs-extension.cpp",
         "extension/httpfs/s3fs.cpp",
-    }, &.{});
+    }, &.{"-std=c++11"});
     httpfs_extension.install();
 
     var duckdb_sources = std.ArrayList([]const u8).init(b.allocator);
@@ -381,14 +381,15 @@ pub fn build(b: *std.build.Builder) !void {
     duckdb_static.addIncludeDir("extension/icu/include");
     duckdb_static.addIncludeDir("extension/parquet/include");
     duckdb_static.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
+    duckdb_static.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
     duckdb_static.defineCMacro("DISABLE_DUCKDB_REMOTE_INSTALL", null);
     duckdb_static.defineCMacro("DUCKDB_SOURCE_ID", "\"last\"");
-    duckdb_static.defineCMacro("DUCKDB_VERSION", "\"dev-version\"");
+    duckdb_static.defineCMacro("DUCKDB_VERSION","\"devVersion\"");
     duckdb_static.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
     duckdb_static.defineCMacro("BUILD_ICU_EXTENSION", "ON");
     duckdb_static.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
     duckdb_static.defineCMacro("SQLITE_OMIT_LOAD_EXTENSION","1");
-    duckdb_static.addCSourceFiles(duckdb_sources.items, &.{});
+    duckdb_static.addCSourceFiles(duckdb_sources.items, &.{"-std=c++11"});
     duckdb_static.force_pic = true;
     duckdb_static.linkLibCpp();
     duckdb_static.setBuildMode(mode);
@@ -464,14 +465,14 @@ pub fn build(b: *std.build.Builder) !void {
         "tools/sqlite3_api_wrapper/sqlite3_api_wrapper.cpp",
         "tools/sqlite3_api_wrapper/sqlite3_udf_api/sqlite3_udf_wrapper.cpp",
         "tools/sqlite3_api_wrapper/sqlite3_udf_api/cast_sqlite.cpp",
-        }, &.{});
-    sqlite3_api_wrapper_static.addCSourceFile("tools/sqlite3_api_wrapper/sqlite3/printf.c", &.{});
-    sqlite3_api_wrapper_static.addCSourceFile("tools/sqlite3_api_wrapper/sqlite3/strglob.c", &.{});
+        }, &.{"-std=c++11"});
+    sqlite3_api_wrapper_static.addCSourceFile("tools/sqlite3_api_wrapper/sqlite3/printf.c", &.{"-std=c++11"});
+    sqlite3_api_wrapper_static.addCSourceFile("tools/sqlite3_api_wrapper/sqlite3/strglob.c", &.{"-std=c++11"});
     if (target.isWindows()){
         sqlite3_api_wrapper_static.linkLibC();
         sqlite3_api_wrapper_static.addCSourceFile(
             "tools/sqlite3_api_wrapper/sqlite3/os_win.c", 
-            &.{});
+            &.{"-std=c++11"});
     }
     sqlite3_api_wrapper_static.install();
 
@@ -516,13 +517,13 @@ pub fn build(b: *std.build.Builder) !void {
     shell.strip = true;
     shell.linkLibCpp();    
     shell.linkLibC();    
-    shell.addCSourceFile("tools/shell/shell.c", &.{});
+    shell.addCSourceFile("tools/shell/shell.c", &.{"-std=c++11"});
     if (!target.isWindows()){
         shell.linkSystemLibrary("ssl");
         shell.linkSystemLibrary("crypto");
         shell.linkLibCpp();
         shell.addCSourceFile(
-            "tools/shell/linenoise.cpp",&.{});
+            "tools/shell/linenoise.cpp",&.{"-std=c++11"});
         shell.defineCMacro("HAVE_LINENOISE", "1");
     }else{
         shell.addLibPath("third_party/openssl/win64/lib");    
