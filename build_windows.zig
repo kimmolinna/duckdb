@@ -29,10 +29,10 @@ pub fn build(b: *std.build.Builder) !void {
         "third_party/fastpforlib",
         "third_party/snappy",
         "third_party/hyperloglog",
-        "third_party/libpg_query/grammar",
         "third_party/miniz",
         "third_party/re2",
         "third_party/tdigest",
+        "third_party",
         "extension/httpfs/include",
         "extension/icu/include",
         "extension/parquet/include",
@@ -94,47 +94,17 @@ pub fn build(b: *std.build.Builder) !void {
     const duckdb = b.addSharedLibrary("duckdb",null, .unversioned);
     for (include_dirs) |include_dir|{
         duckdb.addIncludeDir(include_dir);
-    }
+    }  
+    duckdb.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
+    duckdb.defineCMacro("BUILD_ICU_EXTENSION", "ON");
+    duckdb.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
     duckdb.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
     duckdb.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
-    duckdb.defineCMacro("DISABLE_DUCKDB_REMOTE_INSTALL", null);
-    duckdb.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
-    duckdb.defineCMacro("BUILD_ICU_EXTENSION", "ON");
-    duckdb.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
-    duckdb.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
-    duckdb.defineCMacro("BUILD_ICU_EXTENSION", "ON");
-    duckdb.defineCMacro("SQLITE_OMIT_LOAD_EXTENSION","1");
-    if (target.isWindows()){
-        duckdb.defineCMacro("_CRT_SECURE_NO_WARNINGS", null);
-        duckdb.defineCMacro("_SCL_SECURE_NO_WARNINGS", null);
-        duckdb.defineCMacro("_UNICODE", null);  
-        duckdb.defineCMacro("NOMINMAX", null);
-        duckdb.defineCMacro("STRICT", null);
-        duckdb.defineCMacro("UNICODE", null);
-        duckdb.addLibPath("third_party/win64/lib");    
-        duckdb.linkSystemLibrary("libssl");
-        duckdb.linkSystemLibrary("libcrypto");
-        duckdb.step.dependOn(
-            &b.addInstallFileWithDir(
-                .{.path = "third_party/win64/libssl-3-x64.dll"},
-                .bin,
-                "libssl-3-x64.dll",
-            ).step
-        );
-        duckdb.step.dependOn(
-            &b.addInstallFileWithDir(
-                .{.path = "third_party/win64/libcrypto-3-x64.dll"},
-                .bin,
-                "libcrypto-3-x64.dll",
-            ).step
-        );
-    }else{
-        duckdb.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
-        duckdb.linkSystemLibrary("ssl");
-        duckdb.linkSystemLibrary("crypto");
-    }
+    duckdb.addObjectFile("third_party/win64/lib/libssl.lib");
+    duckdb.addObjectFile("third_party/win64/lib/libcrypto.lib");
     duckdb.addCSourceFiles(duckdb_sources.items, &.{});
     duckdb.force_pic = true;
+    duckdb.linkLibC();
     duckdb.linkLibCpp();
     duckdb.setBuildMode(mode);
     duckdb.setTarget(target);
@@ -145,73 +115,35 @@ pub fn build(b: *std.build.Builder) !void {
     for (include_dirs) |include_dir|{
         shell.addIncludeDir(include_dir);
     }
+    shell.addIncludeDir("tools/shell/include");
+    shell.addIncludeDir("tools/sqlite3_api_wrapper/include");
     shell.addIncludeDir("tools/sqlite3_api_wrapper/include");
     shell.addIncludeDir("tools/sqlite3_api_wrapper/sqlite3_udf_api/include");
     shell.addIncludeDir("tools/sqlite3_api_wrapper/sqlite3");
-    shell.addIncludeDir("tools/shell/include");
-    shell.addIncludeDir("tools/sqlite3_api_wrapper/include");
+    shell.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
+    shell.defineCMacro("BUILD_ICU_EXTENSION", "ON");
+    shell.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
     shell.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
     shell.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
-    shell.defineCMacro("DISABLE_DUCKDB_REMOTE_INSTALL", null);
-    shell.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
-    shell.defineCMacro("BUILD_ICU_EXTENSION", "ON");
-    shell.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
-    shell.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
-    shell.defineCMacro("BUILD_ICU_EXTENSION", "ON");
-    shell.defineCMacro("SQLITE_OMIT_LOAD_EXTENSION","1");
-
-    if (target.isWindows()){
-        shell.linkLibC();
-        shell.addCSourceFile(
+    shell.defineCMacro("SQLITE_SHELL_IS_UTF8", null);
+ 
+    shell.addCSourceFile(
             "tools/sqlite3_api_wrapper/sqlite3/os_win.c", 
             &.{});
-        shell.defineCMacro("_CRT_SECURE_NO_WARNINGS", null);
-        shell.defineCMacro("_SCL_SECURE_NO_WARNINGS", null);
-        shell.defineCMacro("_UNICODE", null);  
-        shell.defineCMacro("NOMINMAX", null);
-        shell.defineCMacro("STRICT", null);
-        shell.defineCMacro("UNICODE", null);
-        shell.addLibPath("third_party/win64/lib");    
-        shell.linkSystemLibrary("libssl");
-        shell.linkSystemLibrary("libcrypto");
-        shell.step.dependOn(
-            &b.addInstallFileWithDir(
-                .{.path = "third_party/win64/libssl-3-x64.dll"},
-                .bin,
-                "libssl-3-x64.dll",
-            ).step
-        );
-        shell.step.dependOn(
-            &b.addInstallFileWithDir(
-                .{.path = "third_party/win64/libcrypto-3-x64.dll"},
-                .bin,
-                "libcrypto-3-x64.dll",
-            ).step
-        );
-    }else{
-        shell.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
-        shell.linkSystemLibrary("ssl");
-        shell.linkSystemLibrary("crypto");
-        shell.addCSourceFile(
-            "tools/shell/linenoise.cpp",&.{});
-        shell.defineCMacro("HAVE_LINENOISE", "1");
-    }
+    shell.addObjectFile("third_party/win64/lib/libssl.lib");
+    shell.addObjectFile("third_party/win64/lib/libcrypto.lib");
     shell.addCSourceFiles(duckdb_sources.items, &.{});
-    shell.defineCMacro("SQLITE_SHELL_IS_UTF8", null);
-    shell.force_pic = true;
-    shell.linkLibCpp();
-    shell.setBuildMode(mode);
-    shell.setTarget(target);
-    shell.strip = true;
-    shell.addCSourceFiles(&.{
-        "tools/sqlite3_api_wrapper/sqlite3_api_wrapper.cpp",
-        "tools/sqlite3_api_wrapper/sqlite3_udf_api/sqlite3_udf_wrapper.cpp",
-        "tools/sqlite3_api_wrapper/sqlite3_udf_api/cast_sqlite.cpp",
-        }, &.{});
+    shell.addCSourceFile("tools/sqlite3_api_wrapper/sqlite3_api_wrapper.cpp",&.{});
+    shell.addCSourceFile("tools/sqlite3_api_wrapper/sqlite3_udf_api/sqlite3_udf_wrapper.cpp",&.{});
+    shell.addCSourceFile("tools/sqlite3_api_wrapper/sqlite3_udf_api/cast_sqlite.cpp",&.{});
     shell.addCSourceFile("tools/sqlite3_api_wrapper/sqlite3/printf.c", &.{});
     shell.addCSourceFile("tools/sqlite3_api_wrapper/sqlite3/strglob.c", &.{});
     shell.addCSourceFile("tools/shell/shell.c", &.{});
-
-// shell aka DuckDBClient
+    shell.linkLibC();
+    shell.linkLibCpp();
+    shell.force_pic = true;
+    shell.setBuildMode(mode);
+    shell.setTarget(target);
+    shell.strip = true;
     shell.install();
  }

@@ -1,0 +1,4 @@
+mkdir -p build/release
+cd build/release
+cmake -DBUILD_PARQUET_EXTENSION=TRUE  -DBUILD_ICU_EXTENSION=1 -DBUILD_HTTPFS_EXTENSION=1 -DCMAKE_BUILD_TYPE=Release ../..
+cmake --build . --config Release
