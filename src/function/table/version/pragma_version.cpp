@@ -1,6 +1,6 @@
 #include "duckdb/function/table/system_functions.hpp"
 #include "duckdb/main/database.hpp"
-#include "duckdb/function/table/version.hpp"
+#include "duckdb/function/pragma/version.hpp"
 
 #include <cstdint>
 
