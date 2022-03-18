@@ -25,12 +25,14 @@ pub fn build(b: *std.build.Builder) !void {
     fastpforlib.addIncludeDir("third_party/re2");
     fastpforlib.addIncludeDir("third_party/tdigest");    
     fastpforlib.addIncludeDir("third_party/utf8proc/include");
-    fastpforlib.force_pic = true;
+
+    fastpforlib.addCSourceFile("third_party/fastpforlib/bitpacking.cpp", &.{});
+
     fastpforlib.linkLibCpp();
+    fastpforlib.force_pic = true;
     fastpforlib.setBuildMode(mode);
     fastpforlib.setTarget(target);
     fastpforlib.strip = true;
-    fastpforlib.addCSourceFile("third_party/fastpforlib/bitpacking.cpp", &.{});
     fastpforlib.install();
 
     const fmt = b.addStaticLibrary("fmt", null);
@@ -45,14 +47,17 @@ pub fn build(b: *std.build.Builder) !void {
     fmt.addIncludeDir("third_party/pcg");
     fmt.addIncludeDir("third_party/re2");
     fmt.addIncludeDir("third_party/tdigest");    
+
     fmt.addIncludeDir("third_party/utf8proc/include");
     fmt.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
-    fmt.force_pic = true;
+
+    fmt.addCSourceFile("third_party/fmt/format.cc", &.{});
+
     fmt.linkLibCpp();
+    fmt.force_pic = true;
     fmt.setBuildMode(mode);
     fmt.setTarget(target);
     fmt.strip = true;
-    fmt.addCSourceFile("third_party/fmt/format.cc", &.{});
     fmt.install();
 
     const hyperloglog = b.addStaticLibrary("hyperloglog", null);
@@ -68,15 +73,17 @@ pub fn build(b: *std.build.Builder) !void {
     hyperloglog.addIncludeDir("third_party/re2");
     hyperloglog.addIncludeDir("third_party/tdigest");    
     hyperloglog.addIncludeDir("third_party/utf8proc/include");
-    hyperloglog.force_pic = true;
-    hyperloglog.linkLibCpp();
-    hyperloglog.setBuildMode(mode);
-    hyperloglog.setTarget(target);
-    hyperloglog.strip = true;
+
     hyperloglog.addCSourceFiles(&.{
         "third_party/hyperloglog/hyperloglog.cpp",
         "third_party/hyperloglog/sds.cpp", 
     }, &.{});
+
+    hyperloglog.linkLibCpp();
+    hyperloglog.force_pic = true;
+    hyperloglog.setBuildMode(mode);
+    hyperloglog.setTarget(target);
+    hyperloglog.strip = true;
     hyperloglog.install();
 
     const pg_query = b.addStaticLibrary("pg_query", null);
@@ -93,11 +100,7 @@ pub fn build(b: *std.build.Builder) !void {
     pg_query.addIncludeDir("third_party/re2");
     pg_query.addIncludeDir("third_party/tdigest");    
     pg_query.addIncludeDir("third_party/utf8proc/include");
-    pg_query.force_pic = true;
-    pg_query.linkLibCpp();
-    pg_query.setBuildMode(mode);
-    pg_query.setTarget(target);
-    pg_query.strip = true;
+
     pg_query.addCSourceFiles(&.{
         "third_party/libpg_query/pg_functions.cpp",
         "third_party/libpg_query/postgres_parser.cpp",
@@ -110,6 +113,12 @@ pub fn build(b: *std.build.Builder) !void {
         "third_party/libpg_query/src_backend_parser_scansup.cpp",
         "third_party/libpg_query/src_common_keywords.cpp",
     }, &.{});
+
+    pg_query.linkLibCpp();
+    pg_query.force_pic = true;
+    pg_query.setBuildMode(mode);
+    pg_query.setTarget(target);
+    pg_query.strip = true;
     pg_query.install();
    
     const miniz = b.addStaticLibrary("miniz", null);
@@ -125,12 +134,14 @@ pub fn build(b: *std.build.Builder) !void {
     miniz.addIncludeDir("third_party/re2");
     miniz.addIncludeDir("third_party/tdigest");    
     miniz.addIncludeDir("third_party/utf8proc/include");
-    miniz.force_pic = true;
+
+    miniz.addCSourceFile("third_party/miniz/miniz.cpp", &.{});
+
     miniz.linkLibCpp();
+    miniz.force_pic = true;
     miniz.setBuildMode(mode);
     miniz.setTarget(target);
     miniz.strip = true;
-    miniz.addCSourceFile("third_party/miniz/miniz.cpp", &.{});
     miniz.install();
 
     const duckdb_re2 = b.addStaticLibrary("duckdb_re2", null);
@@ -146,11 +157,7 @@ pub fn build(b: *std.build.Builder) !void {
     duckdb_re2.addIncludeDir("third_party/re2");
     duckdb_re2.addIncludeDir("third_party/tdigest");    
     duckdb_re2.addIncludeDir("third_party/utf8proc/include");
-    duckdb_re2.force_pic = true;
-    duckdb_re2.linkLibCpp();
-    duckdb_re2.setBuildMode(mode);
-    duckdb_re2.setTarget(target);
-    duckdb_re2.strip = true;
+
     duckdb_re2.addCSourceFiles(&.{
         "third_party/re2/re2/bitstate.cc",
         "third_party/re2/re2/compile.cc",
@@ -175,6 +182,12 @@ pub fn build(b: *std.build.Builder) !void {
         "third_party/re2/util/rune.cc",
         "third_party/re2/util/strutil.cc",
     }, &.{});
+
+    duckdb_re2.linkLibCpp();
+    duckdb_re2.force_pic = true;
+    duckdb_re2.setBuildMode(mode);
+    duckdb_re2.setTarget(target);
+    duckdb_re2.strip = true;
     duckdb_re2.install();
 
     const utf8proc = b.addStaticLibrary("utf8proc", null);
@@ -190,15 +203,17 @@ pub fn build(b: *std.build.Builder) !void {
     utf8proc.addIncludeDir("third_party/re2");
     utf8proc.addIncludeDir("third_party/tdigest");    
     utf8proc.addIncludeDir("third_party/utf8proc/include");
-    utf8proc.force_pic = true;
-    utf8proc.linkLibCpp();
-    utf8proc.setBuildMode(mode);
-    utf8proc.setTarget(target);
-    utf8proc.strip = true;
+
     utf8proc.addCSourceFiles(&.{
         "third_party/utf8proc/utf8proc_wrapper.cpp",
         "third_party/utf8proc/utf8proc.cpp", 
     }, &.{});
+
+    utf8proc.linkLibCpp();
+    utf8proc.force_pic = true;
+    utf8proc.setBuildMode(mode);
+    utf8proc.setTarget(target);
+    utf8proc.strip = true;
     utf8proc.install();
 
     const parquet_extension = b.addStaticLibrary("parquet_extension", null);
@@ -219,13 +234,10 @@ pub fn build(b: *std.build.Builder) !void {
     parquet_extension.addIncludeDir("third_party/thrift");    
     parquet_extension.addIncludeDir("third_party/utf8proc/include");
     parquet_extension.addIncludeDir("third_party/zstd/include");    
+
     parquet_extension.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
     parquet_extension.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
-    parquet_extension.force_pic = true;
-    parquet_extension.linkLibCpp();
-    parquet_extension.setBuildMode(mode);
-    parquet_extension.setTarget(target);
-    parquet_extension.strip = true;
+
     parquet_extension.addCSourceFiles(&.{
         "extension/parquet/column_reader.cpp",
         "extension/parquet/column_writer.cpp",
@@ -265,6 +277,12 @@ pub fn build(b: *std.build.Builder) !void {
         "third_party/zstd/decompress/zstd_decompress_block.cpp",
         "third_party/zstd/decompress/zstd_decompress.cpp",
     }, &.{});
+
+    parquet_extension.linkLibCpp();
+    parquet_extension.force_pic = true;
+    parquet_extension.setBuildMode(mode);
+    parquet_extension.setTarget(target);
+    parquet_extension.strip = true;
     parquet_extension.install();
 
     const icu_extension = b.addStaticLibrary("icu_extension", null);
@@ -281,23 +299,26 @@ pub fn build(b: *std.build.Builder) !void {
     icu_extension.addIncludeDir("third_party/re2");
     icu_extension.addIncludeDir("third_party/tdigest");
     icu_extension.addIncludeDir("third_party/utf8proc/include");
+
     icu_extension.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
     icu_extension.defineCMacro("BUILD_ICU_EXTENSION", "ON");
-    icu_extension.force_pic = true;
+
+    icu_extension.addCSourceFiles(&.{
+        "extension/icu/icu-collate.cpp",
+        "extension/icu/icu-dateadd.cpp",
+        "extension/icu/icu-datefunc.cpp",
+        "extension/icu/icu-datepart.cpp",
+        "extension/icu/icu-datesub.cpp",
+        "extension/icu/icu-datetrunc.cpp",
+        "extension/icu/icu-extension.cpp",
+        "extension/icu/icu-makedate.cpp",
+    }, &.{});
+
     icu_extension.linkLibCpp();
+    icu_extension.force_pic = true;
     icu_extension.setBuildMode(mode);
     icu_extension.setTarget(target);
     icu_extension.strip = true;
-    icu_extension.addCSourceFiles(&.{
-        "extension/icu/icu-extension.cpp",
-        "extension/icu/icu-datetrunc.cpp",
-        "extension/icu/icu-makedate.cpp",
-        "extension/icu/icu-collate.cpp",
-        "extension/icu/icu-datepart.cpp",
-        "extension/icu/icu-datesub.cpp",
-        "extension/icu/icu-datefunc.cpp",
-        "extension/icu/icu-dateadd.cpp",
-    }, &.{});
     icu_extension.install();
 
     const httpfs_extension = b.addStaticLibrary("httpfs_extension", null);
@@ -319,21 +340,24 @@ pub fn build(b: *std.build.Builder) !void {
     httpfs_extension.addIncludeDir("third_party/re2");
     httpfs_extension.addIncludeDir("third_party/tdigest");
     httpfs_extension.addIncludeDir("third_party/utf8proc/include");
+
     httpfs_extension.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
     httpfs_extension.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
     httpfs_extension.defineCMacro("BUILD_ICU_EXTENSION", "ON");
     httpfs_extension.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
-    httpfs_extension.force_pic = true;
+
+    httpfs_extension.addCSourceFiles(&.{
+        "extension/httpfs/crypto.cpp",
+        "extension/httpfs/httpfs-extension.cpp",
+        "extension/httpfs/httpfs.cpp",
+        "extension/httpfs/s3fs.cpp",
+    }, &.{});
+
     httpfs_extension.linkLibCpp();
+    httpfs_extension.force_pic = true;
     httpfs_extension.setBuildMode(mode);
     httpfs_extension.setTarget(target);
     httpfs_extension.strip = true;
-    httpfs_extension.addCSourceFiles(&.{
-        "extension/httpfs/httpfs.cpp",
-        "extension/httpfs/crypto.cpp",
-        "extension/httpfs/httpfs-extension.cpp",
-        "extension/httpfs/s3fs.cpp",
-    }, &.{});
     httpfs_extension.install();
 
     var duckdb_sources = std.ArrayList([]const u8).init(b.allocator);
@@ -374,21 +398,26 @@ pub fn build(b: *std.build.Builder) !void {
     duckdb_static.addIncludeDir("extension/httpfs/include");
     duckdb_static.addIncludeDir("extension/icu/include");
     duckdb_static.addIncludeDir("extension/parquet/include");
+
     duckdb_static.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
     duckdb_static.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
     duckdb_static.defineCMacro("DISABLE_DUCKDB_REMOTE_INSTALL", null);
     duckdb_static.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
     duckdb_static.defineCMacro("BUILD_ICU_EXTENSION", "ON");
     duckdb_static.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
+    duckdb_static.defineCMacro("SQLITE_OMIT_LOAD_EXTENSION","1");
+
     duckdb_static.addCSourceFiles(duckdb_sources.items, &.{});
-    duckdb_static.force_pic = true;
+
     duckdb_static.linkLibCpp();
+    duckdb_static.force_pic = true;
     duckdb_static.setBuildMode(mode);
     duckdb_static.setTarget(target);
     duckdb_static.strip = true;
     duckdb_static.install();
     
     const duckdb = b.addSharedLibrary("duckdb",null, .unversioned);
+
     duckdb.addIncludeDir("src/include");
     duckdb.addIncludeDir("third_party/concurrentqueue");
     duckdb.addIncludeDir("third_party/fast_float");
@@ -406,17 +435,15 @@ pub fn build(b: *std.build.Builder) !void {
     duckdb.addIncludeDir("extension/httpfs/include");
     duckdb.addIncludeDir("extension/icu/include");
     duckdb.addIncludeDir("extension/parquet/include");
+
     duckdb.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
     duckdb.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
     duckdb.defineCMacro("DISABLE_DUCKDB_REMOTE_INSTALL", null);
     duckdb.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
     duckdb.defineCMacro("BUILD_ICU_EXTENSION", "ON");
     duckdb.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
+
     duckdb.addCSourceFiles(duckdb_sources.items, &.{});
-    duckdb.defineCMacro("duckdb_EXPORTS",null);
-    duckdb.linkLibC();
-    duckdb.linkLibCpp();
-//    duckdb.linkSystemLibrary("c");
     if (target.isWindows()){
         duckdb.addObjectFile("zig-out/lib/duckdb_re2.lib");
         duckdb.addObjectFile("zig-out/lib/fastpforlib.lib");
@@ -428,23 +455,6 @@ pub fn build(b: *std.build.Builder) !void {
         duckdb.addObjectFile("zig-out/lib/httpfs_extension.lib");
         duckdb.addObjectFile("zig-out/lib/pg_query.lib");    
         duckdb.addObjectFile("zig-out/lib/utf8proc.lib");
-        duckdb.addLibPath("third_party/win64/lib");    
-        duckdb.linkSystemLibrary("libssl");
-        duckdb.linkSystemLibrary("libcrypto");
-        duckdb.step.dependOn(
-            &b.addInstallFileWithDir(
-                .{.path = "third_party/win64/libssl-3-x64.dll"},
-                .bin,
-                "libssl-3-x64.dll",
-            ).step
-        );
-        duckdb.step.dependOn(
-            &b.addInstallFileWithDir(
-                .{.path = "third_party/win64/libcrypto-3-x64.dll"},
-                .bin,
-                "libcrypto-3-x64.dll",
-            ).step
-        );
     }else{
         duckdb.addObjectFile("zig-out/lib/libduckdb_re2.a");
         duckdb.addObjectFile("zig-out/lib/libfastpforlib.a");
@@ -456,9 +466,17 @@ pub fn build(b: *std.build.Builder) !void {
         duckdb.addObjectFile("zig-out/lib/libhttpfs_extension.a");
         duckdb.addObjectFile("zig-out/lib/libpg_query.a");    
         duckdb.addObjectFile("zig-out/lib/libutf8proc.a");
+    }
+
+    if(target.isWindows()){
+        duckdb.linkSystemLibrary("c");
+        duckdb.addObjectFile("third_party/win64/lib/libcrypto.lib");
+        duckdb.addObjectFile("third_party/win64/lib/libssl.lib");
+    }else{
         duckdb.linkSystemLibrary("ssl");
         duckdb.linkSystemLibrary("crypto");
     }
+    duckdb.linkLibCpp();
     duckdb.setBuildMode(mode);
     duckdb.setTarget(target);
     duckdb.strip = true;
@@ -485,33 +503,36 @@ pub fn build(b: *std.build.Builder) !void {
     sqlite3_api_wrapper_static.addIncludeDir("tools/sqlite3_api_wrapper/include");
     sqlite3_api_wrapper_static.addIncludeDir("tools/sqlite3_api_wrapper/sqlite3_udf_api/include");
     sqlite3_api_wrapper_static.addIncludeDir("tools/sqlite3_api_wrapper/sqlite3");
+
     sqlite3_api_wrapper_static.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
     sqlite3_api_wrapper_static.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
     sqlite3_api_wrapper_static.defineCMacro("BUILD_ICU_EXTENSION", "ON");
     sqlite3_api_wrapper_static.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
     sqlite3_api_wrapper_static.defineCMacro("SQLITE_SHELL_IS_UTF8", null);
-    sqlite3_api_wrapper_static.force_pic = true;
-    sqlite3_api_wrapper_static.linkLibCpp();
-    sqlite3_api_wrapper_static.setBuildMode(mode);
-    sqlite3_api_wrapper_static.setTarget(target);
-    sqlite3_api_wrapper_static.strip = true;
+
     sqlite3_api_wrapper_static.addCSourceFiles(&.{
         "tools/sqlite3_api_wrapper/sqlite3_api_wrapper.cpp",
         "tools/sqlite3_api_wrapper/sqlite3_udf_api/sqlite3_udf_wrapper.cpp",
         "tools/sqlite3_api_wrapper/sqlite3_udf_api/cast_sqlite.cpp",
         }, &.{});
+
     sqlite3_api_wrapper_static.addCSourceFile("tools/sqlite3_api_wrapper/sqlite3/printf.c", &.{});
     sqlite3_api_wrapper_static.addCSourceFile("tools/sqlite3_api_wrapper/sqlite3/strglob.c", &.{});
    
     if (target.isWindows()){
-        sqlite3_api_wrapper_static.addCSourceFile("tools/sqlite3_api_wrapper/sqlite3/os_win.c", &.{});
-        sqlite3_api_wrapper_static.addObjectFile("zig-out/lib/duckdb_static.lib");
-        sqlite3_api_wrapper_static.addObjectFile("zig-out/lib/utf8proc.lib");
-    }else{
-        sqlite3_api_wrapper_static.addObjectFile("zig-out/lib/libduckdb_static.a");
-        sqlite3_api_wrapper_static.addObjectFile("zig-out/lib/libutf8proc.a");
+        sqlite3_api_wrapper_static.addCSourceFile(
+            "tools/sqlite3_api_wrapper/sqlite3/os_win.c", 
+            &.{});
     }
-    
+    sqlite3_api_wrapper_static.addObjectFile("zig-out/lib/libduckdb_static.a");
+    sqlite3_api_wrapper_static.addObjectFile("zig-out/lib/libutf8proc.a");
+
+    sqlite3_api_wrapper_static.force_pic = true;
+    sqlite3_api_wrapper_static.linkLibC();
+    sqlite3_api_wrapper_static.linkLibCpp();
+    sqlite3_api_wrapper_static.setBuildMode(mode);
+    sqlite3_api_wrapper_static.setTarget(target);
+    sqlite3_api_wrapper_static.strip = true;
     sqlite3_api_wrapper_static.install();
 
 // shell aka DuckDBClient
@@ -534,14 +555,14 @@ pub fn build(b: *std.build.Builder) !void {
     shell.addIncludeDir("third_party/tdigest");
     shell.addIncludeDir("third_party/utf8proc/include");
     shell.addIncludeDir("tools/sqlite3_api_wrapper/include");
-    shell.addIncludeDir("tools/sqlite3_api_wrapper/sqlite3_udf_api/include");
-    shell.addIncludeDir("tools/sqlite3_api_wrapper/sqlite3");
-    shell.addIncludeDir("tools/shell/include");
+    shell.addIncludeDir("third_party");
+
     shell.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
 //    shell.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
 //    shell.defineCMacro("BUILD_ICU_EXTENSION", "ON");
 //    shell.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
     shell.defineCMacro("SQLITE_OMIT_LOAD_EXTENSION","1");
+
     shell.addCSourceFile("tools/shell/shell.c", &.{});
   
     if (target.isWindows()){
@@ -580,10 +601,25 @@ pub fn build(b: *std.build.Builder) !void {
             "tools/shell/linenoise.cpp",&.{});
         shell.defineCMacro("HAVE_LINENOISE", "1");
     }
-    
+
+    shell.addObjectFile("zig-out/lib/libduckdb_static.a");
+    shell.addObjectFile("zig-out/lib/libduckdb_re2.a");
+    shell.addObjectFile("zig-out/lib/libfastpforlib.a");
+    shell.addObjectFile("zig-out/lib/libfmt.a");
+    shell.addObjectFile("zig-out/lib/libduckdb_static.a");
+    shell.addObjectFile("zig-out/lib/libhyperloglog.a");
+    shell.addObjectFile("zig-out/lib/libminiz.a");    
+    shell.addObjectFile("zig-out/lib/libparquet_extension.a");
+    shell.addObjectFile("zig-out/lib/libicu_extension.a");
+    shell.addObjectFile("zig-out/lib/libhttpfs_extension.a");
+    shell.addObjectFile("zig-out/lib/libpg_query.a");    
+    shell.addObjectFile("zig-out/lib/libutf8proc.a");
+    shell.addObjectFile("zig-out/lib/libsqlite3_api_wrapper_static.a");
+
+    shell.linkLibC();    
+    shell.linkLibCpp();    
     shell.setBuildMode(mode);
     shell.setTarget(target);
-    shell.strip = true;   
-    shell.linkLibC();    
+    shell.strip = true;
     shell.install();
  }

@@ -50,11 +50,11 @@ idx_t DuckDB::StandardVectorSize() {
 }
 
 const char *DuckDB::SourceID() {
-	return DUCKDB_SOURCE;
+	return DUCKDB_SOURCE_ID;
 }
 
 const char *DuckDB::LibraryVersion() {
-	return DUCKDB_VERSION_STRING;
+	return DUCKDB_VERSION;
 }
 
 string DuckDB::Platform() {
