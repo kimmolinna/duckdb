@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 
 pub fn build(b: *std.build.Builder) !void {
     // Standard target options allows the person running `zig build` to choose
@@ -104,7 +105,7 @@ pub fn build(b: *std.build.Builder) !void {
     duckdb.defineCMacro("SQLITE_OMIT_LOAD_EXTENSION","1");
     duckdb.defineCMacro("duckdb_EXPORTS",null);
 
-    if (target.isWindows()){
+    if (target.isWindows() or builtin.os.tag == .windows){
         duckdb.addObjectFile("third_party/openssl/lib/libcrypto.lib");
         duckdb.addObjectFile("third_party/openssl/lib/libssl.lib");
         duckdb.addObjectFile("third_party/win64/ws2_32.lib");
@@ -136,7 +137,7 @@ pub fn build(b: *std.build.Builder) !void {
     shell.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
     shell.defineCMacro("SQLITE_SHELL_IS_UTF8", null);
  
-    if (target.isWindows()){
+    if (target.isWindows() or builtin.os.tag == .windows){
         shell.addCSourceFile(
             "tools/sqlite3_api_wrapper/sqlite3/os_win.c", 
             &.{});
@@ -161,7 +162,6 @@ pub fn build(b: *std.build.Builder) !void {
                 "libcrypto-3-x64.dll",
             ).step
         );
-
     }else{
         shell.linkSystemLibrary("ssl");
         shell.linkSystemLibrary("crypto");
