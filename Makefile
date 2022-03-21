@@ -12,8 +12,6 @@ DISABLE_UNITY_FLAG=
 DISABLE_SANITIZER_FLAG=
 OSX_BUILD_UNIVERSAL_FLAG=
 
-python3 scripts/generate_version_hpp.py
-
 ifeq ($(GEN),ninja)
 	GENERATOR=-G "Ninja"
 	FORCE_COLOR=-DFORCE_COLORED_OUTPUT=1
