@@ -203,6 +203,9 @@ pub fn build(b: *std.build.Builder) !void {
     duckdb.defineCMacro("duckdb_EXPORTS",null);
     duckdb.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
     duckdb.defineCMacro("DUCKDB",null);
+    duckdb.defineCMacro("SHARED",null);
+    duckdb.defineCMacro("Wl",null);
+
 
     if (target.isWindows() or builtin.os.tag == .windows){
         duckdb.addObjectFile("third_party/openssl/lib/libcrypto.lib");
@@ -322,7 +325,7 @@ pub fn build(b: *std.build.Builder) !void {
     shell.linkLibrary(utf8proc);
     _ = try basicSetup(shell, mode, target);
     shell.linkLibC();    
-}
+ }
 
 fn basicSetup(in: *std.build.LibExeObjStep, mode: std.builtin.Mode,target: std.zig.CrossTarget)!void {
     const include_dirs= [_][]const u8{
