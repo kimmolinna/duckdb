@@ -12,135 +12,65 @@ pub fn build(b: *std.build.Builder) !void {
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const mode = b.standardReleaseOptions();
 
-    var duckdb_sources = std.ArrayList([]const u8).init(b.allocator);
-    var dir = try std.fs.cwd().openDir("src", .{ .iterate = true });
-    var walker = try dir.walk(b.allocator);
-    defer walker.deinit();
-    var out: [256] u8 = undefined;
-
-    const allowed_exts = [_][]const u8{ ".c", ".cpp", ".cxx", ".c++", ".cc" };
-    while (try walker.next()) |entry| {
-        const ext = std.fs.path.extension(entry.basename);
-        const include_file = for (allowed_exts) |e| {
-            if (std.mem.eql(u8, ext, e))
-                break true;
-            } else false;
-        if (include_file) {
-            // we have to clone the path as walker.next() or walker.deinit() will override/kill it
-            const file = try std.fmt.bufPrint(&out, "src/{s}", .{entry.path}); 
-            try duckdb_sources.append(b.dupe(file));
-        }  
-    }
-
     const fastpforlib = b.addStaticLibrary("fastpforlib", null);
-    fastpforlib.addCSourceFile("third_party/fastpforlib/bitpacking.cpp", &.{});
+    fastpforlib.addCSourceFiles(
+        (try iterateFiles(b, "third_party/fastpforlib",
+        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
     _ = try basicSetup(fastpforlib, mode, target);
 
     const fmt = b.addStaticLibrary("fmt", null);
-    fmt.addCSourceFile("third_party/fmt/format.cc", &.{});
+    fmt.addCSourceFiles(
+        (try iterateFiles(b, "third_party/fmt",
+        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
     _ = try basicSetup(fmt, mode, target);
 
     const hyperloglog = b.addStaticLibrary("hyperloglog", null);
-    hyperloglog.addCSourceFiles(&.{
-        "third_party/hyperloglog/hyperloglog.cpp",
-        "third_party/hyperloglog/sds.cpp", 
-    }, &.{});
+    hyperloglog.addCSourceFiles(
+        (try iterateFiles(b, "third_party/hyperloglog",
+        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
     _ = try basicSetup(hyperloglog, mode, target);
 
     const pg_query = b.addStaticLibrary("pg_query", null);
-    pg_query.addCSourceFiles(&.{
-        "third_party/libpg_query/pg_functions.cpp",
-        "third_party/libpg_query/postgres_parser.cpp",
-        "third_party/libpg_query/src_backend_nodes_list.cpp",
-        "third_party/libpg_query/src_backend_nodes_makefuncs.cpp",
-        "third_party/libpg_query/src_backend_nodes_value.cpp",
-        "third_party/libpg_query/src_backend_parser_gram.cpp",
-        "third_party/libpg_query/src_backend_parser_parser.cpp", 
-        "third_party/libpg_query/src_backend_parser_scan.cpp",
-        "third_party/libpg_query/src_backend_parser_scansup.cpp",
-        "third_party/libpg_query/src_common_keywords.cpp",
-    }, &.{});
+    pg_query.addCSourceFiles(
+        (try iterateFiles(b, "third_party/libpg_query",
+        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
     pg_query.addIncludeDir("third_party/libpg_query/include");
     _ = try basicSetup(pg_query, mode, target);
   
     const miniz = b.addStaticLibrary("miniz", null);
-    miniz.addCSourceFile("third_party/miniz/miniz.cpp", &.{});
+    miniz.addCSourceFiles(
+        (try iterateFiles(b, "third_party/miniz",
+        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
     _ = try basicSetup(miniz, mode, target);
 
     const duckdb_re2 = b.addStaticLibrary("duckdb_re2", null);
-    duckdb_re2.addCSourceFiles(&.{
-        "third_party/re2/re2/bitstate.cc",
-        "third_party/re2/re2/compile.cc",
-        "third_party/re2/re2/dfa.cc",
-        "third_party/re2/re2/filtered_re2.cc",
-        "third_party/re2/re2/mimics_pcre.cc",
-        "third_party/re2/re2/nfa.cc",
-        "third_party/re2/re2/onepass.cc",
-        "third_party/re2/re2/parse.cc",
-        "third_party/re2/re2/perl_groups.cc",
-        "third_party/re2/re2/prefilter_tree.cc",
-        "third_party/re2/re2/prefilter.cc",
-        "third_party/re2/re2/prog.cc",
-        "third_party/re2/re2/re2.cc",
-        "third_party/re2/re2/regexp.cc",
-        "third_party/re2/re2/set.cc",
-        "third_party/re2/re2/simplify.cc",
-        "third_party/re2/re2/stringpiece.cc",
-        "third_party/re2/re2/tostring.cc",
-        "third_party/re2/re2/unicode_casefold.cc",
-        "third_party/re2/re2/unicode_groups.cc",
-        "third_party/re2/util/rune.cc",
-        "third_party/re2/util/strutil.cc",
-    }, &.{});
+    duckdb_re2.addCSourceFiles(
+        (try iterateFiles(b, "third_party/re2",
+        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
     _ = try basicSetup(duckdb_re2, mode, target);
 
     const utf8proc = b.addStaticLibrary("utf8proc", null);
-    utf8proc.addCSourceFiles(&.{
-        "third_party/utf8proc/utf8proc_wrapper.cpp",
-        "third_party/utf8proc/utf8proc.cpp", 
-    }, &.{});
+    utf8proc.addCSourceFiles(
+        (try iterateFiles(b, "third_party/utf8proc",
+        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
     _ = try basicSetup(utf8proc, mode, target);
 
     const parquet_extension = b.addStaticLibrary("parquet_extension", null);
-    parquet_extension.addCSourceFiles(&.{
-        "extension/parquet/column_reader.cpp",
-        "extension/parquet/column_writer.cpp",
-        "extension/parquet/parquet_metadata.cpp",
-        "extension/parquet/parquet_reader.cpp",
-        "extension/parquet/parquet_statistics.cpp",
-        "extension/parquet/parquet_timestamp.cpp",
-        "extension/parquet/parquet_writer.cpp",
-        "extension/parquet/parquet-extension.cpp",
-        "extension/parquet/zstd_file_system.cpp",
-        "third_party/parquet/parquet_constants.cpp",
-        "third_party/parquet/parquet_types.cpp",
-        "third_party/snappy/snappy-sinksource.cc",
-        "third_party/snappy/snappy.cc",
-        "third_party/thrift/thrift/protocol/TProtocol.cpp",
-        "third_party/thrift/thrift/transport/TBufferTransports.cpp",
-        "third_party/thrift/thrift/transport/TTransportException.cpp",
-        "third_party/zstd/common/entropy_common.cpp",
-        "third_party/zstd/common/error_private.cpp",
-        "third_party/zstd/common/fse_decompress.cpp",
-        "third_party/zstd/common/xxhash.cpp",
-        "third_party/zstd/common/zstd_common.cpp",
-        "third_party/zstd/compress/fse_compress.cpp",
-        "third_party/zstd/compress/hist.cpp",
-        "third_party/zstd/compress/huf_compress.cpp",
-        "third_party/zstd/compress/zstd_compress_literals.cpp",
-        "third_party/zstd/compress/zstd_compress_sequences.cpp",
-        "third_party/zstd/compress/zstd_compress_superblock.cpp",
-        "third_party/zstd/compress/zstd_compress.cpp",
-        "third_party/zstd/compress/zstd_double_fast.cpp",
-        "third_party/zstd/compress/zstd_fast.cpp",
-        "third_party/zstd/compress/zstd_lazy.cpp",
-        "third_party/zstd/compress/zstd_ldm.cpp",
-        "third_party/zstd/compress/zstd_opt.cpp",
-        "third_party/zstd/decompress/huf_decompress.cpp",
-        "third_party/zstd/decompress/zstd_ddict.cpp",
-        "third_party/zstd/decompress/zstd_decompress_block.cpp",
-        "third_party/zstd/decompress/zstd_decompress.cpp",
-    }, &.{});
+    parquet_extension.addCSourceFiles(
+        (try iterateFiles(b, "extension/parquet",
+         &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
+    parquet_extension.addCSourceFiles(
+        (try iterateFiles(b, "third_party/parquet",
+         &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
+    parquet_extension.addCSourceFiles(
+        (try iterateFiles(b, "third_party/snappy",
+         &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
+    parquet_extension.addCSourceFiles(
+        (try iterateFiles(b, "third_party/thrift",
+         &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
+    parquet_extension.addCSourceFiles(
+        (try iterateFiles(b, "third_party/zstd",
+         &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
     parquet_extension.addIncludeDir("extension/parquet/include");
     parquet_extension.addIncludeDir("third_party/parquet");    
     parquet_extension.addIncludeDir("third_party/snappy");    
@@ -149,36 +79,31 @@ pub fn build(b: *std.build.Builder) !void {
     _ = try basicSetup(parquet_extension, mode, target);
 
     const icu_extension = b.addStaticLibrary("icu_extension", null);
-    icu_extension.addCSourceFiles(&.{
-        "extension/icu/icu-collate.cpp",
-        "extension/icu/icu-dateadd.cpp",
-        "extension/icu/icu-datefunc.cpp",
-        "extension/icu/icu-datepart.cpp",
-        "extension/icu/icu-datesub.cpp",
-        "extension/icu/icu-datetrunc.cpp",
-        "extension/icu/icu-extension.cpp",
-        "extension/icu/icu-makedate.cpp",
-    }, &.{});
+    icu_extension.addCSourceFiles(
+        (try iterateFiles(b, "extension/icu",
+        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
     icu_extension.addIncludeDir("extension/icu/include");
+    icu_extension.addIncludeDir("extension/icu/third_party/icu/common");
+    icu_extension.addIncludeDir("extension/icu/third_party/icu/i18n");
     _ = try basicSetup(icu_extension, mode, target);
 
     const httpfs_extension = b.addStaticLibrary("httpfs_extension", null);
-    httpfs_extension.addCSourceFiles(&.{
-        "extension/httpfs/crypto.cpp",
-        "extension/httpfs/httpfs-extension.cpp",
-        "extension/httpfs/httpfs.cpp",
-        "extension/httpfs/s3fs.cpp",
-    }, &.{});
+    httpfs_extension.addCSourceFiles(
+        (try iterateFiles(b, "extension/httpfs",
+        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
     httpfs_extension.addIncludeDir("extension/httpfs/include");
     httpfs_extension.addIncludeDir("third_party/httplib");
     httpfs_extension.addIncludeDir("third_party/openssl/include");
     httpfs_extension.addIncludeDir("third_party/picohash");
     _ = try basicSetup(httpfs_extension, mode, target);
   
+    const duckdb_sources = try iterateFiles(b, "src", &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"});
     const duckdb_static = b.addStaticLibrary("duckdb_static", null);  
     duckdb_static.addCSourceFiles(duckdb_sources.items, &.{});
     duckdb_static.addIncludeDir("extension/httpfs/include");
     duckdb_static.addIncludeDir("extension/icu/include");
+    duckdb_static.addIncludeDir("extension/icu/third_party/icu/common");
+    duckdb_static.addIncludeDir("extension/icu/third_party/icu/i18n");
     duckdb_static.addIncludeDir("extension/parquet/include");
     duckdb_static.addIncludeDir("third_party/httplib"); 
     duckdb_static.addIncludeDir("third_party/libpg_query/include");
@@ -194,6 +119,8 @@ pub fn build(b: *std.build.Builder) !void {
     duckdb.addCSourceFiles(duckdb_sources.items, &.{});
     duckdb.addIncludeDir("extension/httpfs/include");
     duckdb.addIncludeDir("extension/icu/include");
+    duckdb.addIncludeDir("extension/icu/third_party/icu/common");
+    duckdb.addIncludeDir("extension/icu/third_party/icu/i18n");
     duckdb.addIncludeDir("extension/parquet/include");
     duckdb.addIncludeDir("third_party/httplib"); 
     duckdb.addIncludeDir("third_party/libpg_query/include");
@@ -212,14 +139,14 @@ pub fn build(b: *std.build.Builder) !void {
         duckdb.addObjectFile("third_party/win64/cryptui.lib");
         duckdb.step.dependOn(
             &b.addInstallFileWithDir(
-                .{.path = "third_party/openssl/bin/libssl-3-x64.dll"},
+                .{.path = "third_party/openssl/dll/libssl-3-x64.dll"},
                 .bin,
                 "libssl-3-x64.dll",
             ).step
         );
         duckdb.step.dependOn(
             &b.addInstallFileWithDir(
-                .{.path = "third_party/openssl/bin/libcrypto-3-x64.dll"},
+                .{.path = "third_party/openssl/dll/libcrypto-3-x64.dll"},
                 .bin,
                 "libcrypto-3-x64.dll",
             ).step
@@ -243,21 +170,18 @@ pub fn build(b: *std.build.Builder) !void {
     duckdb.linkLibC();
 
     const sqlite3_api_wrapper_static = b.addStaticLibrary("sqlite3_api_wrapper_static", null);
-    sqlite3_api_wrapper_static.addCSourceFiles(&.{
-        "tools/sqlite3_api_wrapper/sqlite3_api_wrapper.cpp",
-        "tools/sqlite3_api_wrapper/sqlite3_udf_api/sqlite3_udf_wrapper.cpp",
-        "tools/sqlite3_api_wrapper/sqlite3_udf_api/cast_sqlite.cpp",
-        "tools/sqlite3_api_wrapper/sqlite3/printf.c",
-        "tools/sqlite3_api_wrapper/sqlite3/strglob.c",
-        }, &.{});
+    sqlite3_api_wrapper_static.addCSourceFiles(
+        (try iterateFiles(b, "tools/sqlite3_api_wrapper",
+        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
     if (target.isWindows()){
         sqlite3_api_wrapper_static.addCSourceFile(
             "tools/sqlite3_api_wrapper/sqlite3/os_win.c", 
-            &.{});
-    }    
+            &.{});}    
     sqlite3_api_wrapper_static.addIncludeDir("extension");
     sqlite3_api_wrapper_static.addIncludeDir("extension/httpfs/include");
     sqlite3_api_wrapper_static.addIncludeDir("extension/icu/include");
+    sqlite3_api_wrapper_static.addIncludeDir("extension/icu/third_party/icu/common");
+    sqlite3_api_wrapper_static.addIncludeDir("extension/icu/third_party/icu/i18n");
     sqlite3_api_wrapper_static.addIncludeDir("extension/parquet/include");
     sqlite3_api_wrapper_static.addIncludeDir("third_party/libpg_query/include");
     sqlite3_api_wrapper_static.addIncludeDir("tools/sqlite3_api_wrapper/include");
@@ -275,6 +199,9 @@ pub fn build(b: *std.build.Builder) !void {
 // shell aka DuckDBClient
     const shell = b.addExecutable("duckdb", null);
     shell.addCSourceFile("tools/shell/shell.c", &.{});
+    shell.addIncludeDir("extension/httpfs/include");
+    shell.addIncludeDir("extension/icu/include");
+    shell.addIncludeDir("extension/parquet/include");
     shell.addIncludeDir("third_party/libpg_query/include");
     shell.addIncludeDir("third_party/openssl/include");
     shell.addIncludeDir("tools/shell/include");
@@ -322,6 +249,35 @@ pub fn build(b: *std.build.Builder) !void {
     shell.linkLibrary(utf8proc);
     _ = try basicSetup(shell, mode, target);
     shell.linkLibC();    
+}
+
+fn iterateFiles(b: *std.build.Builder, path: []const u8, allowed_exts: []const[]const u8)!std.ArrayList([]const u8) {
+    var files = std.ArrayList([]const u8).init(b.allocator);
+    var dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
+    var walker = try dir.walk(b.allocator);
+    defer walker.deinit();
+    var out: [256] u8 = undefined;
+    const exclude_files:[]const[]const u8 = &.{
+        "grammar.cpp","symbols.cpp","duckdb-c.cpp","os_win.c","linenoise.cpp","parquetcli.cpp",
+        "utf8proc_data.cpp","test_sqlite3_api_wrapper.cpp","test_sqlite3_udf_api_wrapper.cpp",};
+    while (try walker.next()) |entry| {
+        const ext = std.fs.path.extension(entry.basename);
+        const include_file = for (allowed_exts) |e| {
+            if (std.mem.eql(u8, ext, e))
+                break true;
+            } else false;
+        if (include_file) {
+            const exclude_file = for (exclude_files) |e| {
+                if (std.mem.eql(u8, entry.basename, e))
+                    break true;
+                } else false;
+            if (!exclude_file){
+                const file = try std.fmt.bufPrint(&out, ("{s}/{s}"), .{path,entry.path}); 
+                try files.append(b.dupe(file));
+            }
+        }  
+    }
+    return files;
 }
 
 fn basicSetup(in: *std.build.LibExeObjStep, mode: std.builtin.Mode,target: std.zig.CrossTarget)!void {

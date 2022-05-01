@@ -234,7 +234,7 @@ io_file
 *.lai
 *.la
 *.a
-*.lib
+#*.lib
 
 # Compiled protocol buffers
 *_pb2.py
