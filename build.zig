@@ -13,64 +13,40 @@ pub fn build(b: *std.build.Builder) !void {
     const mode = b.standardReleaseOptions();
 
     const fastpforlib = b.addStaticLibrary("fastpforlib", null);
-    fastpforlib.addCSourceFiles(
-        (try iterateFiles(b, "third_party/fastpforlib",
-        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
+    fastpforlib.addCSourceFiles((try iterateFiles(b, "third_party/fastpforlib")).items, &.{});
     _ = try basicSetup(fastpforlib, mode, target);
 
     const fmt = b.addStaticLibrary("fmt", null);
-    fmt.addCSourceFiles(
-        (try iterateFiles(b, "third_party/fmt",
-        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
+    fmt.addCSourceFiles((try iterateFiles(b, "third_party/fmt")).items, &.{});
     _ = try basicSetup(fmt, mode, target);
 
     const hyperloglog = b.addStaticLibrary("hyperloglog", null);
-    hyperloglog.addCSourceFiles(
-        (try iterateFiles(b, "third_party/hyperloglog",
-        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
+    hyperloglog.addCSourceFiles((try iterateFiles(b, "third_party/hyperloglog")).items, &.{});
     _ = try basicSetup(hyperloglog, mode, target);
 
     const pg_query = b.addStaticLibrary("pg_query", null);
-    pg_query.addCSourceFiles(
-        (try iterateFiles(b, "third_party/libpg_query",
-        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
+    pg_query.addCSourceFiles((try iterateFiles(b, "third_party/libpg_query")).items, &.{});
     pg_query.addIncludeDir("third_party/libpg_query/include");
     _ = try basicSetup(pg_query, mode, target);
   
     const miniz = b.addStaticLibrary("miniz", null);
-    miniz.addCSourceFiles(
-        (try iterateFiles(b, "third_party/miniz",
-        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
+    miniz.addCSourceFiles((try iterateFiles(b, "third_party/miniz")).items, &.{});
     _ = try basicSetup(miniz, mode, target);
 
     const duckdb_re2 = b.addStaticLibrary("duckdb_re2", null);
-    duckdb_re2.addCSourceFiles(
-        (try iterateFiles(b, "third_party/re2",
-        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
+    duckdb_re2.addCSourceFiles((try iterateFiles(b, "third_party/re2")).items, &.{});
     _ = try basicSetup(duckdb_re2, mode, target);
 
     const utf8proc = b.addStaticLibrary("utf8proc", null);
-    utf8proc.addCSourceFiles(
-        (try iterateFiles(b, "third_party/utf8proc",
-        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
+    utf8proc.addCSourceFiles((try iterateFiles(b, "third_party/utf8proc")).items, &.{});
     _ = try basicSetup(utf8proc, mode, target);
 
     const parquet_extension = b.addStaticLibrary("parquet_extension", null);
-    parquet_extension.addCSourceFiles(
-        (try iterateFiles(b, "extension/parquet",
-         &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
-    parquet_extension.addCSourceFiles(
-        (try iterateFiles(b, "third_party/parquet",
-         &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
-    parquet_extension.addCSourceFiles(
-        (try iterateFiles(b, "third_party/snappy",
-         &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
-    parquet_extension.addCSourceFiles(
-        (try iterateFiles(b, "third_party/thrift",
-         &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
-    parquet_extension.addCSourceFiles(
-        (try iterateFiles(b, "third_party/zstd",
-         &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
+    parquet_extension.addCSourceFiles((try iterateFiles(b, "extension/parquet")).items, &.{});
+    parquet_extension.addCSourceFiles((try iterateFiles(b, "third_party/parquet")).items, &.{});
+    parquet_extension.addCSourceFiles((try iterateFiles(b, "third_party/snappy")).items, &.{});
+    parquet_extension.addCSourceFiles((try iterateFiles(b, "third_party/thrift")).items, &.{});
+    parquet_extension.addCSourceFiles((try iterateFiles(b, "third_party/zstd")).items, &.{});
     parquet_extension.addIncludeDir("extension/parquet/include");
     parquet_extension.addIncludeDir("third_party/parquet");    
     parquet_extension.addIncludeDir("third_party/snappy");    
@@ -79,25 +55,21 @@ pub fn build(b: *std.build.Builder) !void {
     _ = try basicSetup(parquet_extension, mode, target);
 
     const icu_extension = b.addStaticLibrary("icu_extension", null);
-    icu_extension.addCSourceFiles(
-        (try iterateFiles(b, "extension/icu",
-        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
+    icu_extension.addCSourceFiles((try iterateFiles(b, "extension/icu")).items, &.{});
     icu_extension.addIncludeDir("extension/icu/include");
     icu_extension.addIncludeDir("extension/icu/third_party/icu/common");
     icu_extension.addIncludeDir("extension/icu/third_party/icu/i18n");
     _ = try basicSetup(icu_extension, mode, target);
 
     const httpfs_extension = b.addStaticLibrary("httpfs_extension", null);
-    httpfs_extension.addCSourceFiles(
-        (try iterateFiles(b, "extension/httpfs",
-        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
+    httpfs_extension.addCSourceFiles((try iterateFiles(b, "extension/httpfs")).items, &.{});
     httpfs_extension.addIncludeDir("extension/httpfs/include");
     httpfs_extension.addIncludeDir("third_party/httplib");
     httpfs_extension.addIncludeDir("third_party/openssl/include");
     httpfs_extension.addIncludeDir("third_party/picohash");
     _ = try basicSetup(httpfs_extension, mode, target);
   
-    const duckdb_sources = try iterateFiles(b, "src", &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"});
+    const duckdb_sources = try iterateFiles(b, "src");
     const duckdb_static = b.addStaticLibrary("duckdb_static", null);  
     duckdb_static.addCSourceFiles(duckdb_sources.items, &.{});
     duckdb_static.addIncludeDir("extension/httpfs/include");
@@ -171,8 +143,7 @@ pub fn build(b: *std.build.Builder) !void {
 
     const sqlite3_api_wrapper_static = b.addStaticLibrary("sqlite3_api_wrapper_static", null);
     sqlite3_api_wrapper_static.addCSourceFiles(
-        (try iterateFiles(b, "tools/sqlite3_api_wrapper",
-        &.{ ".c", ".cpp", ".cxx", ".c++", ".cc"})).items, &.{});
+        (try iterateFiles(b, "tools/sqlite3_api_wrapper")).items, &.{});
     if (target.isWindows()){
         sqlite3_api_wrapper_static.addCSourceFile(
             "tools/sqlite3_api_wrapper/sqlite3/os_win.c", 
@@ -216,14 +187,14 @@ pub fn build(b: *std.build.Builder) !void {
         shell.addObjectFile("third_party/win64/cryptui.lib");
         shell.step.dependOn(
             &b.addInstallFileWithDir(
-                .{.path = "third_party/openssl/bin/libssl-3-x64.dll"},
+                .{.path = "third_party/openssl/dll/libssl-3-x64.dll"},
                 .bin,
                 "libssl-3-x64.dll",
             ).step
         );
         shell.step.dependOn(
             &b.addInstallFileWithDir(
-                .{.path = "third_party/openssl/bin/libcrypto-3-x64.dll"},
+                .{.path = "third_party/openssl/dll/libcrypto-3-x64.dll"},
                 .bin,
                 "libcrypto-3-x64.dll",
             ).step
@@ -251,7 +222,7 @@ pub fn build(b: *std.build.Builder) !void {
     shell.linkLibC();    
 }
 
-fn iterateFiles(b: *std.build.Builder, path: []const u8, allowed_exts: []const[]const u8)!std.ArrayList([]const u8) {
+fn iterateFiles(b: *std.build.Builder, path: []const u8)!std.ArrayList([]const u8) {
     var files = std.ArrayList([]const u8).init(b.allocator);
     var dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
     var walker = try dir.walk(b.allocator);
@@ -260,6 +231,7 @@ fn iterateFiles(b: *std.build.Builder, path: []const u8, allowed_exts: []const[]
     const exclude_files:[]const[]const u8 = &.{
         "grammar.cpp","symbols.cpp","duckdb-c.cpp","os_win.c","linenoise.cpp","parquetcli.cpp",
         "utf8proc_data.cpp","test_sqlite3_api_wrapper.cpp","test_sqlite3_udf_api_wrapper.cpp",};
+    const allowed_exts: []const[]const u8 =  &.{".c", ".cpp", ".cxx", ".c++", ".cc"};
     while (try walker.next()) |entry| {
         const ext = std.fs.path.extension(entry.basename);
         const include_file = for (allowed_exts) |e| {
