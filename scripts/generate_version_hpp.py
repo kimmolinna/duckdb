@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import subprocess
+from python_helpers import open_utf8
 
 version_dir = os.path.join('src', 'include', 'duckdb', 'function', 'pragma')
 header_file = os.path.join(version_dir, "version.hpp")

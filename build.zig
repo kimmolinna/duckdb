@@ -1,6 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
- 
+
 pub fn build(b: *std.build.Builder) !void {
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
@@ -11,6 +11,10 @@ pub fn build(b: *std.build.Builder) !void {
     // Standard release options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const mode = b.standardReleaseOptions();
+
+    var child = std.ChildProcess.init(&[_][]const u8{"python3", "scripts/generate_version_hpp.py"},std.heap.page_allocator);
+    try child.spawn();
+    _ = try child.wait();
 
     const fastpforlib = b.addStaticLibrary("fastpforlib", null);
     fastpforlib.addCSourceFiles((try iterateFiles(b, "third_party/fastpforlib")).items, &.{});
