@@ -16,7 +16,7 @@ make install
 ```
 Add Zig-path to enviromental variables.
 
-Get DuckDB source from `git clone https://github.com/kimmolinna/duckdb`
+Get DuckDB source from `git clone https://github.com/kimmolinna/duckdb-zig-compiled`
 
 Set up an upstream fetch
 ```bash
