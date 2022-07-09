@@ -233,7 +233,7 @@ fn iterateFiles(b: *std.build.Builder, path: []const u8)!std.ArrayList([]const u
     defer walker.deinit();
     var out: [256] u8 = undefined;
     const exclude_files:[]const[]const u8 = &.{
-        "grammar.cpp","symbols.cpp","duckdb-c.cpp","os_win.c","linenoise.cpp","parquetcli.cpp",
+        "grammar.cpp","symbols.cpp","os_win.c","linenoise.cpp","parquetcli.cpp",
         "utf8proc_data.cpp","test_sqlite3_api_wrapper.cpp","test_sqlite3_udf_api_wrapper.cpp",};
     const allowed_exts: []const[]const u8 =  &.{".c", ".cpp", ".cxx", ".c++", ".cc"};
     while (try walker.next()) |entry| {
