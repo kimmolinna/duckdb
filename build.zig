@@ -19,11 +19,11 @@ pub fn build(b: *std.build.Builder) !void {
     const fastpforlib = b.addStaticLibrary("fastpforlib", null);
     fastpforlib.addCSourceFiles((try iterateFiles(b, "third_party/fastpforlib")).items, &.{});
     _ = try basicSetup(fastpforlib, mode, target);
-
+ 
     const fmt = b.addStaticLibrary("fmt", null);
     fmt.addCSourceFiles((try iterateFiles(b, "third_party/fmt")).items, &.{});
     _ = try basicSetup(fmt, mode, target);
-
+ 
     const hyperloglog = b.addStaticLibrary("hyperloglog", null);
     hyperloglog.addCSourceFiles((try iterateFiles(b, "third_party/hyperloglog")).items, &.{});
     _ = try basicSetup(hyperloglog, mode, target);
@@ -32,14 +32,14 @@ pub fn build(b: *std.build.Builder) !void {
     pg_query.addCSourceFiles((try iterateFiles(b, "third_party/libpg_query")).items, &.{});
     pg_query.addIncludeDir("third_party/libpg_query/include");
     _ = try basicSetup(pg_query, mode, target);
-  
+
     const miniz = b.addStaticLibrary("miniz", null);
     miniz.addCSourceFiles((try iterateFiles(b, "third_party/miniz")).items, &.{});
     _ = try basicSetup(miniz, mode, target);
 
-    const duckdb_re2 = b.addStaticLibrary("duckdb_re2", null);
-    duckdb_re2.addCSourceFiles((try iterateFiles(b, "third_party/re2")).items, &.{});
-    _ = try basicSetup(duckdb_re2, mode, target);
+    const re2 = b.addStaticLibrary("re2", null);
+    re2.addCSourceFiles((try iterateFiles(b, "third_party/re2")).items, &.{});
+    _ = try basicSetup(re2, mode, target);
 
     const utf8proc = b.addStaticLibrary("utf8proc", null);
     utf8proc.addCSourceFiles((try iterateFiles(b, "third_party/utf8proc")).items, &.{});
@@ -73,54 +73,37 @@ pub fn build(b: *std.build.Builder) !void {
     httpfs_extension.addIncludeDir("third_party/picohash");
     _ = try basicSetup(httpfs_extension, mode, target);
   
-    const duckdb_sources = try iterateFiles(b, "src");
-    const duckdb_static = b.addStaticLibrary("duckdb_static", null);  
-    duckdb_static.addCSourceFiles(duckdb_sources.items, &.{});
-    duckdb_static.addIncludeDir("extension/httpfs/include");
-    duckdb_static.addIncludeDir("extension/icu/include");
-    duckdb_static.addIncludeDir("extension/icu/third_party/icu/common");
-    duckdb_static.addIncludeDir("extension/icu/third_party/icu/i18n");
-    duckdb_static.addIncludeDir("extension/parquet/include");
-    duckdb_static.addIncludeDir("third_party/httplib"); 
-    duckdb_static.addIncludeDir("third_party/libpg_query/include");
-    duckdb_static.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
-    duckdb_static.defineCMacro("BUILD_ICU_EXTENSION", "ON");
-    duckdb_static.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
-    duckdb_static.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
-    duckdb_static.defineCMacro("DUCKDB",null);
-    duckdb_static.defineCMacro("SQLITE_OMIT_LOAD_EXTENSION","1");
-    _ = try basicSetup(duckdb_static, mode, target);
-    
-    const duckdb = b.addSharedLibrary("duckdb",null, .unversioned);
-    duckdb.addCSourceFiles(duckdb_sources.items, &.{});
-    duckdb.addIncludeDir("extension/httpfs/include");
-    duckdb.addIncludeDir("extension/icu/include");
-    duckdb.addIncludeDir("extension/icu/third_party/icu/common");
-    duckdb.addIncludeDir("extension/icu/third_party/icu/i18n");
-    duckdb.addIncludeDir("extension/parquet/include");
-    duckdb.addIncludeDir("third_party/httplib"); 
-    duckdb.addIncludeDir("third_party/libpg_query/include");
-    duckdb.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
-    duckdb.defineCMacro("BUILD_ICU_EXTENSION", "ON");
-    duckdb.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
-    duckdb.defineCMacro("duckdb_EXPORTS",null);
-    duckdb.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
-    duckdb.defineCMacro("DUCKDB",null);
+    const duckdb_sources = try iterateFiles(b, "src");    
+    const libduckdb = b.addSharedLibrary("duckdb",null, .unversioned);
+    libduckdb.addCSourceFiles(duckdb_sources.items, &.{});
+    libduckdb.addIncludeDir("extension/httpfs/include");
+    libduckdb.addIncludeDir("extension/icu/include");
+    libduckdb.addIncludeDir("extension/icu/third_party/icu/common");
+    libduckdb.addIncludeDir("extension/icu/third_party/icu/i18n");
+    libduckdb.addIncludeDir("extension/parquet/include");
+    libduckdb.addIncludeDir("third_party/httplib"); 
+    libduckdb.addIncludeDir("third_party/libpg_query/include");
+    libduckdb.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
+    libduckdb.defineCMacro("BUILD_ICU_EXTENSION", "ON");
+    libduckdb.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
+    libduckdb.defineCMacro("duckdb_EXPORTS",null);
+    libduckdb.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
+    libduckdb.defineCMacro("DUCKDB",null);
 
     if (target.isWindows() or builtin.os.tag == .windows){
-        duckdb.addObjectFile("third_party/openssl/lib/libcrypto.lib");
-        duckdb.addObjectFile("third_party/openssl/lib/libssl.lib");
-        duckdb.addObjectFile("third_party/win64/ws2_32.lib");
-        duckdb.addObjectFile("third_party/win64/crypt32.lib");
-        duckdb.addObjectFile("third_party/win64/cryptui.lib");
-        duckdb.step.dependOn(
+        libduckdb.addObjectFile("third_party/openssl/lib/libcrypto.lib");
+        libduckdb.addObjectFile("third_party/openssl/lib/libssl.lib");
+        libduckdb.addObjectFile("third_party/win64/ws2_32.lib");
+        libduckdb.addObjectFile("third_party/win64/crypt32.lib");
+        libduckdb.addObjectFile("third_party/win64/cryptui.lib");
+        libduckdb.step.dependOn(
             &b.addInstallFileWithDir(
                 .{.path = "third_party/openssl/dll/libssl-3-x64.dll"},
                 .bin,
                 "libssl-3-x64.dll",
             ).step
         );
-        duckdb.step.dependOn(
+        libduckdb.step.dependOn(
             &b.addInstallFileWithDir(
                 .{.path = "third_party/openssl/dll/libcrypto-3-x64.dll"},
                 .bin,
@@ -128,49 +111,78 @@ pub fn build(b: *std.build.Builder) !void {
             ).step
         );
     }else{
-        duckdb.linkSystemLibrary("ssl");
-        duckdb.linkSystemLibrary("crypto");
+        libduckdb.linkSystemLibrary("ssl");
+        libduckdb.linkSystemLibrary("crypto");
     }
-    duckdb.linkLibrary(duckdb_re2);
-    duckdb.linkLibrary(fastpforlib);
-    duckdb.linkLibrary(fmt);
-    duckdb.linkLibrary(hyperloglog);
-    duckdb.linkLibrary(miniz);
-    duckdb.linkLibrary(parquet_extension);
-    duckdb.linkLibrary(pg_query);
-    duckdb.linkLibrary(utf8proc);
-    duckdb.linkLibrary(parquet_extension);
-    duckdb.linkLibrary(icu_extension);
-    duckdb.linkLibrary(httpfs_extension);
-    _ = try basicSetup(duckdb, mode, target);
-    duckdb.linkLibC();
+    libduckdb.linkLibrary(re2);
+    libduckdb.linkLibrary(fastpforlib);
+    libduckdb.linkLibrary(fmt);
+    libduckdb.linkLibrary(hyperloglog);
+    libduckdb.linkLibrary(miniz);
+    libduckdb.linkLibrary(parquet_extension);
+    libduckdb.linkLibrary(pg_query);
+    libduckdb.linkLibrary(utf8proc);
+    libduckdb.linkLibrary(parquet_extension);
+    libduckdb.linkLibrary(icu_extension);
+    libduckdb.linkLibrary(httpfs_extension);
+    _ = try basicSetup(libduckdb, mode, target);
+    libduckdb.linkLibC();
 
-    const sqlite3_api_wrapper_static = b.addStaticLibrary("sqlite3_api_wrapper_static", null);
-    sqlite3_api_wrapper_static.addCSourceFiles(
+    const bun = b.addSharedLibrary("duckdb_bun",null, .unversioned);
+    bun.addCSourceFile("third_party/bun/sql.c",&.{});
+    bun.linkLibC();
+    bun.addIncludeDir("src");    
+    bun.addIncludeDir("include");
+    bun.linkLibrary(libduckdb);
+    _ = try basicSetup(bun, mode, target);
+
+    const static = b.addStaticLibrary("duckdb_static", null);  
+    static.addCSourceFiles(duckdb_sources.items, &.{});
+    static.addIncludeDir("extension/httpfs/include");
+    static.addIncludeDir("extension/icu/include");
+    static.addIncludeDir("extension/icu/third_party/icu/common");
+    static.addIncludeDir("extension/icu/third_party/icu/i18n");
+    static.addIncludeDir("extension/parquet/include");
+    static.addIncludeDir("third_party/httplib"); 
+    static.addIncludeDir("third_party/libpg_query/include");
+    static.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
+    static.defineCMacro("BUILD_ICU_EXTENSION", "ON");
+    static.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
+    static.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
+    static.defineCMacro("DUCKDB",null);
+    static.defineCMacro("SQLITE_OMIT_LOAD_EXTENSION","1");
+    _ = try basicSetup(static, mode, target);
+
+    const sqlite = b.addStaticLibrary("sqlite_api", null);
+    sqlite.addCSourceFiles(
         (try iterateFiles(b, "tools/sqlite3_api_wrapper")).items, &.{});
     if (target.isWindows()){
-        sqlite3_api_wrapper_static.addCSourceFile(
+        sqlite.addCSourceFile(
             "tools/sqlite3_api_wrapper/sqlite3/os_win.c", 
             &.{});}    
-    sqlite3_api_wrapper_static.addIncludeDir("extension");
-    sqlite3_api_wrapper_static.addIncludeDir("extension/httpfs/include");
-    sqlite3_api_wrapper_static.addIncludeDir("extension/icu/include");
-    sqlite3_api_wrapper_static.addIncludeDir("extension/icu/third_party/icu/common");
-    sqlite3_api_wrapper_static.addIncludeDir("extension/icu/third_party/icu/i18n");
-    sqlite3_api_wrapper_static.addIncludeDir("extension/parquet/include");
-    sqlite3_api_wrapper_static.addIncludeDir("third_party/libpg_query/include");
-    sqlite3_api_wrapper_static.addIncludeDir("tools/sqlite3_api_wrapper/include");
-    sqlite3_api_wrapper_static.addIncludeDir("tools/sqlite3_api_wrapper/sqlite3_udf_api/include");
-    sqlite3_api_wrapper_static.addIncludeDir("tools/sqlite3_api_wrapper/sqlite3");
-    sqlite3_api_wrapper_static.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
-    sqlite3_api_wrapper_static.defineCMacro("BUILD_ICU_EXTENSION", "ON");
-    sqlite3_api_wrapper_static.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
-    sqlite3_api_wrapper_static.defineCMacro("SQLITE_SHELL_IS_UTF8", null);
-    sqlite3_api_wrapper_static.linkLibrary(duckdb_static);
-    sqlite3_api_wrapper_static.linkLibrary(utf8proc);
-    _ = try basicSetup(sqlite3_api_wrapper_static, mode, target);
-    sqlite3_api_wrapper_static.linkLibC();
- 
+    sqlite.addIncludeDir("extension");
+    sqlite.addIncludeDir("extension/httpfs/include");
+    sqlite.addIncludeDir("extension/icu/include");
+    sqlite.addIncludeDir("extension/icu/third_party/icu/common");
+    sqlite.addIncludeDir("extension/icu/third_party/icu/i18n");
+    sqlite.addIncludeDir("extension/parquet/include");
+    sqlite.addIncludeDir("third_party/libpg_query/include");
+    sqlite.addIncludeDir("tools/sqlite3_api_wrapper/include");
+    sqlite.addIncludeDir("tools/sqlite3_api_wrapper/sqlite3_udf_api/include");
+    sqlite.addIncludeDir("tools/sqlite3_api_wrapper/sqlite3");
+    sqlite.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
+    sqlite.defineCMacro("BUILD_ICU_EXTENSION", "ON");
+    sqlite.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
+    sqlite.defineCMacro("SQLITE_SHELL_IS_UTF8", null);
+    sqlite.linkLibrary(static);
+    sqlite.linkLibrary(utf8proc);
+    _ = try basicSetup(sqlite, mode, target);
+    sqlite.linkLibC();
+    const sqlite_step = b.step("sqlite","Compiling Static library");
+    sqlite_step.dependOn(&sqlite.step);
+    sqlite_step.dependOn(&static.step);
+    sqlite_step.dependOn(&utf8proc.step);
+    
 // shell aka DuckDBClient
     const shell = b.addExecutable("duckdb", null);
     shell.addCSourceFile("tools/shell/shell.c", &.{});
@@ -210,8 +222,8 @@ pub fn build(b: *std.build.Builder) !void {
             "tools/shell/linenoise.cpp",&.{});
         shell.defineCMacro("HAVE_LINENOISE", "1");
     }
-    shell.linkLibrary(duckdb_re2);
-    shell.linkLibrary(duckdb_static);
+    shell.linkLibrary(re2);
+    shell.linkLibrary(static);
     shell.linkLibrary(fastpforlib);
     shell.linkLibrary(fmt);
     shell.linkLibrary(httpfs_extension);
@@ -220,7 +232,7 @@ pub fn build(b: *std.build.Builder) !void {
     shell.linkLibrary(miniz);    
     shell.linkLibrary(parquet_extension);
     shell.linkLibrary(pg_query);    
-    shell.linkLibrary(sqlite3_api_wrapper_static);
+    shell.linkLibrary(sqlite);
     shell.linkLibrary(utf8proc);
     _ = try basicSetup(shell, mode, target);
     shell.linkLibC();    
@@ -280,5 +292,5 @@ fn basicSetup(in: *std.build.LibExeObjStep, mode: std.builtin.Mode,target: std.z
     in.force_pic = true;
     in.setTarget(target);
     in.strip = true;
-    in.install();        
+    in.install();
 }
