@@ -33,6 +33,10 @@ pub fn build(b: *std.build.Builder) !void {
     pg_query.addIncludeDir("third_party/libpg_query/include");
     _ = try basicSetup(pg_query, mode, target);
 
+    const mbedtls = b.addStaticLibrary("mbedtls", null);
+    mbedtls.addCSourceFiles((try iterateFiles(b, "third_party/mbedtls")).items, &.{});
+    _ = try basicSetup(mbedtls, mode, target);
+
     const miniz = b.addStaticLibrary("miniz", null);
     miniz.addCSourceFiles((try iterateFiles(b, "third_party/miniz")).items, &.{});
     _ = try basicSetup(miniz, mode, target);
@@ -114,27 +118,55 @@ pub fn build(b: *std.build.Builder) !void {
         libduckdb.linkSystemLibrary("ssl");
         libduckdb.linkSystemLibrary("crypto");
     }
-    libduckdb.linkLibrary(re2);
     libduckdb.linkLibrary(fastpforlib);
     libduckdb.linkLibrary(fmt);
+    libduckdb.linkLibrary(httpfs_extension);
     libduckdb.linkLibrary(hyperloglog);
+    libduckdb.linkLibrary(icu_extension);
+    libduckdb.linkLibrary(mbedtls);
     libduckdb.linkLibrary(miniz);
     libduckdb.linkLibrary(parquet_extension);
-    libduckdb.linkLibrary(pg_query);
-    libduckdb.linkLibrary(utf8proc);
     libduckdb.linkLibrary(parquet_extension);
-    libduckdb.linkLibrary(icu_extension);
-    libduckdb.linkLibrary(httpfs_extension);
+    libduckdb.linkLibrary(pg_query);
+    libduckdb.linkLibrary(re2);
+    libduckdb.linkLibrary(utf8proc);
     _ = try basicSetup(libduckdb, mode, target);
     libduckdb.linkLibC();
 
     const bun = b.addSharedLibrary("duckdb_bun",null, .unversioned);
+    bun.addCSourceFiles(duckdb_sources.items, &.{});
     bun.addCSourceFile("third_party/bun/sql.c",&.{});
-    bun.linkLibC();
     bun.addIncludeDir("src");    
     bun.addIncludeDir("include");
-    bun.linkLibrary(libduckdb);
+    bun.addIncludeDir("extension/httpfs/include");
+    bun.addIncludeDir("extension/icu/include");
+    bun.addIncludeDir("extension/icu/third_party/icu/common");
+    bun.addIncludeDir("extension/icu/third_party/icu/i18n");
+    bun.addIncludeDir("extension/parquet/include");
+    bun.addIncludeDir("third_party/httplib"); 
+    bun.addIncludeDir("third_party/libpg_query/include");
+    bun.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
+    bun.defineCMacro("BUILD_ICU_EXTENSION", "ON");
+    bun.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
+    bun.defineCMacro("duckdb_EXPORTS",null);
+    bun.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
+    bun.defineCMacro("DUCKDB",null);
+    bun.linkSystemLibrary("ssl");
+    bun.linkSystemLibrary("crypto");
+    bun.linkLibrary(fastpforlib);
+    bun.linkLibrary(fmt);
+    bun.linkLibrary(httpfs_extension);
+    bun.linkLibrary(hyperloglog);
+    bun.linkLibrary(icu_extension);
+    bun.linkLibrary(mbedtls);
+    bun.linkLibrary(miniz);
+    bun.linkLibrary(parquet_extension);
+    bun.linkLibrary(parquet_extension);
+    bun.linkLibrary(pg_query);
+    bun.linkLibrary(re2);
+    bun.linkLibrary(utf8proc);
     _ = try basicSetup(bun, mode, target);
+    bun.linkLibC();
 
     const static = b.addStaticLibrary("duckdb_static", null);  
     static.addCSourceFiles(duckdb_sources.items, &.{});
@@ -222,17 +254,18 @@ pub fn build(b: *std.build.Builder) !void {
             "tools/shell/linenoise.cpp",&.{});
         shell.defineCMacro("HAVE_LINENOISE", "1");
     }
-    shell.linkLibrary(re2);
-    shell.linkLibrary(static);
     shell.linkLibrary(fastpforlib);
     shell.linkLibrary(fmt);
     shell.linkLibrary(httpfs_extension);
     shell.linkLibrary(hyperloglog);
     shell.linkLibrary(icu_extension);
+    shell.linkLibrary(mbedtls);
     shell.linkLibrary(miniz);    
     shell.linkLibrary(parquet_extension);
     shell.linkLibrary(pg_query);    
+    shell.linkLibrary(re2);
     shell.linkLibrary(sqlite);
+    shell.linkLibrary(static);
     shell.linkLibrary(utf8proc);
     _ = try basicSetup(shell, mode, target);
     shell.linkLibC();    
@@ -276,6 +309,7 @@ fn basicSetup(in: *std.build.LibExeObjStep, mode: std.builtin.Mode,target: std.z
         "third_party/fastpforlib",
         "third_party/fmt/include",
         "third_party/hyperloglog",
+        "third_party/mbedtls/include",
         "third_party/miniparquet",
         "third_party/miniz",
         "third_party/pcg",

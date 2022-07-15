@@ -1,9 +1,13 @@
 ### Building Zig
 Get the required packages for building and create symbolic links::
 ```bash
-sudo apt-get install clang-13 libclang-13-dev lldb-13 liblldb-13-dev lld-13 llvm-13 libllvm13 lld-13 liblld-13-dev cmake
-sudo ln -s /usr/bin/clang++-13 /usr/bin/c++
-sudo ln -s /usr/bin/llvm-config-13 /usr/bin/llvm-config
+sudo apt-get install zlib1g zlib1g-dev
+wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
+# Fingerprint: 6084 F3CF 814B 57C1 CF12 EFD5 15CF 4D18 AF4F 7421
+sudo apt-get update
+sudo apt-get install clang-14 libclang-14-dev lldb-14 liblldb-14-dev lld-14 llvm-14 libllvm14 lld-14 liblld-14-dev cmake
+sudo ln -s /usr/bin/clang++-14 /usr/bin/c++
+sudo ln -s /usr/bin/llvm-config-14 /usr/bin/llvm-config
 ```
 
 Get Zig source from `git clone https://github.com/ziglang/zig` and build it:
@@ -11,7 +15,7 @@ Get Zig source from `git clone https://github.com/ziglang/zig` and build it:
 ```bash
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake .. -DCMAKE_BUILD_TYPE=Release -DZIG_STATIC_ZLIB=ON
 make install
 ```
 Add Zig-path to enviromental variables.
