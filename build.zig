@@ -151,8 +151,31 @@ pub fn build(b: *std.build.Builder) !void {
     bun.defineCMacro("duckdb_EXPORTS",null);
     bun.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
     bun.defineCMacro("DUCKDB",null);
-    bun.linkSystemLibrary("ssl");
-    bun.linkSystemLibrary("crypto");
+
+    if (target.isWindows() or builtin.os.tag == .windows){
+        bun.addObjectFile("third_party/openssl/lib/libcrypto.lib");
+        bun.addObjectFile("third_party/openssl/lib/libssl.lib");
+        bun.addObjectFile("third_party/win64/ws2_32.lib");
+        bun.addObjectFile("third_party/win64/crypt32.lib");
+        bun.addObjectFile("third_party/win64/cryptui.lib");
+        bun.step.dependOn(
+            &b.addInstallFileWithDir(
+                .{.path = "third_party/openssl/dll/libssl-3-x64.dll"},
+                .bin,
+                "libssl-3-x64.dll",
+            ).step
+        );
+        bun.step.dependOn(
+            &b.addInstallFileWithDir(
+                .{.path = "third_party/openssl/dll/libcrypto-3-x64.dll"},
+                .bin,
+                "libcrypto-3-x64.dll",
+            ).step
+        );
+    }else{
+        bun.linkSystemLibrary("ssl");
+        bun.linkSystemLibrary("crypto");
+    }
     bun.linkLibrary(fastpforlib);
     bun.linkLibrary(fmt);
     bun.linkLibrary(httpfs_extension);
@@ -316,6 +339,8 @@ fn basicSetup(in: *std.build.LibExeObjStep, mode: std.builtin.Mode,target: std.z
         "third_party/re2",
         "third_party/tdigest",
         "third_party/utf8proc/include",
+        "third_party/mbedtls/include",
+        "third_party/jaro_winkler",
     };
     for (include_dirs) |include_dir|{
         in.addIncludeDir(include_dir);
