@@ -296,7 +296,8 @@ pub fn build(b: *std.build.Builder) !void {
     shell.linkLibrary(httpfs_extension);
     shell.linkLibrary(icu_extension);
     _ = try basicSetup(shell, mode, target);
-    shell.linkLibC();    
+    shell.linkLibC();
+    shell.want_lto = false; 
 }
 
 fn iterateFiles(b: *std.build.Builder, path: []const u8)!std.ArrayList([]const u8) {
