@@ -53,6 +53,29 @@ pub fn build(b: *std.build.Builder) !void {
     utf8proc.addCSourceFiles((try iterateFiles(b, "third_party/utf8proc")).items, &.{});
     _ = try basicSetup(utf8proc, mode, target);
 
+    const httpfs_extension = b.addStaticLibrary("httpfs_extension", null);
+    httpfs_extension.addCSourceFiles((try iterateFiles(b, "extension/httpfs")).items, &.{});
+    httpfs_extension.addIncludePath("extension/httpfs/include");
+    httpfs_extension.addIncludePath("third_party/httplib");
+    httpfs_extension.addIncludePath("third_party/openssl/include");
+    httpfs_extension.addIncludePath("third_party/picohash");
+    _ = try basicSetup(httpfs_extension, mode, target);
+
+    const icu_extension = b.addStaticLibrary("icu_extension", null);
+    icu_extension.addCSourceFiles((try iterateFiles(b, "extension/icu")).items, &.{});
+    icu_extension.addIncludePath("extension/icu/include");
+    icu_extension.addIncludePath("extension/icu/third_party/icu/common");
+    icu_extension.addIncludePath("extension/icu/third_party/icu/i18n");
+    _ = try basicSetup(icu_extension, mode, target);
+
+    const jemalloc_extension = b.addStaticLibrary("jemalloc_extension", null);
+    jemalloc_extension.addCSourceFiles((try iterateFiles(b, "extension/jemalloc")).items, &.{});
+    jemalloc_extension.addIncludePath("extension/jemalloc/include");
+    jemalloc_extension.addIncludePath("extension/jemalloc/jemalloc/include");
+    if (!(target.isWindows() or builtin.os.tag == .windows)){
+        _ = try basicSetup(jemalloc_extension, mode, target);
+    }
+
     const parquet_extension = b.addStaticLibrary("parquet_extension", null);
     parquet_extension.addCSourceFiles((try iterateFiles(b, "extension/parquet")).items, &.{});
     parquet_extension.addCSourceFiles((try iterateFiles(b, "third_party/parquet")).items, &.{});
@@ -65,23 +88,9 @@ pub fn build(b: *std.build.Builder) !void {
     parquet_extension.addIncludePath("third_party/thrift");    
     parquet_extension.addIncludePath("third_party/zstd/include");    
     _ = try basicSetup(parquet_extension, mode, target);
-
-    const icu_extension = b.addStaticLibrary("icu_extension", null);
-    icu_extension.addCSourceFiles((try iterateFiles(b, "extension/icu")).items, &.{});
-    icu_extension.addIncludePath("extension/icu/include");
-    icu_extension.addIncludePath("extension/icu/third_party/icu/common");
-    icu_extension.addIncludePath("extension/icu/third_party/icu/i18n");
-    _ = try basicSetup(icu_extension, mode, target);
-
-    const httpfs_extension = b.addStaticLibrary("httpfs_extension", null);
-    httpfs_extension.addCSourceFiles((try iterateFiles(b, "extension/httpfs")).items, &.{});
-    httpfs_extension.addIncludePath("extension/httpfs/include");
-    httpfs_extension.addIncludePath("third_party/httplib");
-    httpfs_extension.addIncludePath("third_party/openssl/include");
-    httpfs_extension.addIncludePath("third_party/picohash");
-    _ = try basicSetup(httpfs_extension, mode, target);
   
     const duckdb_sources = try iterateFiles(b, "src");    
+
     const libduckdb = b.addSharedLibrary("duckdb",null, .unversioned);
     libduckdb.addCSourceFiles(duckdb_sources.items, &.{});
     libduckdb.addIncludePath("extension/httpfs/include");
@@ -91,8 +100,8 @@ pub fn build(b: *std.build.Builder) !void {
     libduckdb.addIncludePath("extension/parquet/include");
     libduckdb.addIncludePath("third_party/httplib"); 
     libduckdb.addIncludePath("third_party/libpg_query/include");
-    libduckdb.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
-    libduckdb.defineCMacro("BUILD_ICU_EXTENSION", "ON");
+    libduckdb.defineCMacro("BUILD_HTTPFS_EXTENSION", "TRUE");
+    libduckdb.defineCMacro("BUILD_ICU_EXTENSION", "TRUE");
     libduckdb.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
     libduckdb.defineCMacro("duckdb_EXPORTS",null);
     libduckdb.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
@@ -119,6 +128,10 @@ pub fn build(b: *std.build.Builder) !void {
             ).step
         );
     }else{
+        libduckdb.defineCMacro("BUILD_JEMALLOC_EXTENSION", "TRUE");
+        libduckdb.addIncludePath("extension/jemalloc/include");
+        libduckdb.addIncludePath("extension/jemalloc/jemalloc/include"); 
+        libduckdb.linkLibrary(jemalloc_extension); 
         libduckdb.linkSystemLibrary("ssl");
         libduckdb.linkSystemLibrary("crypto");
     }
@@ -137,64 +150,6 @@ pub fn build(b: *std.build.Builder) !void {
     _ = try basicSetup(libduckdb, mode, target);
     libduckdb.linkLibC();
 
-    const bun = b.addSharedLibrary("duckdb_bun",null, .unversioned);
-    bun.addCSourceFiles(duckdb_sources.items, &.{});
-    bun.addCSourceFile("third_party/bun/sql.c",&.{});
-    bun.addIncludePath("src");    
-    bun.addIncludePath("include");
-    bun.addIncludePath("extension/httpfs/include");
-    bun.addIncludePath("extension/icu/include");
-    bun.addIncludePath("extension/icu/third_party/icu/common");
-    bun.addIncludePath("extension/icu/third_party/icu/i18n");
-    bun.addIncludePath("extension/parquet/include");
-    bun.addIncludePath("third_party/httplib"); 
-    bun.addIncludePath("third_party/libpg_query/include");
-    bun.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
-    bun.defineCMacro("BUILD_ICU_EXTENSION", "ON");
-    bun.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
-    bun.defineCMacro("duckdb_EXPORTS",null);
-    bun.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
-    bun.defineCMacro("DUCKDB",null);
-
-    if (target.isWindows() or builtin.os.tag == .windows){
-        bun.addObjectFile("third_party/openssl/lib/libcrypto.lib");
-        bun.addObjectFile("third_party/openssl/lib/libssl.lib");
-        bun.addObjectFile("third_party/win64/ws2_32.lib");
-        bun.addObjectFile("third_party/win64/crypt32.lib");
-        bun.addObjectFile("third_party/win64/cryptui.lib");
-        bun.step.dependOn(
-            &b.addInstallFileWithDir(
-                .{.path = "third_party/openssl/dll/libssl-3-x64.dll"},
-                .bin,
-                "libssl-3-x64.dll",
-            ).step
-        );
-        bun.step.dependOn(
-            &b.addInstallFileWithDir(
-                .{.path = "third_party/openssl/dll/libcrypto-3-x64.dll"},
-                .bin,
-                "libcrypto-3-x64.dll",
-            ).step
-        );
-    }else{
-        bun.linkSystemLibrary("ssl");
-        bun.linkSystemLibrary("crypto");
-    }
-    bun.linkLibrary(fastpforlib);
-    bun.linkLibrary(fmt);
-    bun.linkLibrary(fsst);
-    bun.linkLibrary(hyperloglog);
-    bun.linkLibrary(mbedtls);
-    bun.linkLibrary(miniz);
-    bun.linkLibrary(pg_query);
-    bun.linkLibrary(re2);
-    bun.linkLibrary(utf8proc);
-    bun.linkLibrary(parquet_extension);
-    bun.linkLibrary(httpfs_extension);
-    bun.linkLibrary(icu_extension);
-    _ = try basicSetup(bun, mode, target);
-    bun.linkLibC();
-
     const static = b.addStaticLibrary("duckdb_static", null);  
     static.addCSourceFiles(duckdb_sources.items, &.{});
     static.addIncludePath("extension/httpfs/include");
@@ -204,43 +159,52 @@ pub fn build(b: *std.build.Builder) !void {
     static.addIncludePath("extension/parquet/include");
     static.addIncludePath("third_party/httplib"); 
     static.addIncludePath("third_party/libpg_query/include");
-    static.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
-    static.defineCMacro("BUILD_ICU_EXTENSION", "ON");
+    static.defineCMacro("BUILD_HTTPFS_EXTENSION", "TRUE");
+    static.defineCMacro("BUILD_ICU_EXTENSION", "TRUE");
     static.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
     static.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
     static.defineCMacro("DUCKDB",null);
     static.defineCMacro("SQLITE_OMIT_LOAD_EXTENSION","1");
     _ = try basicSetup(static, mode, target);
-
-    const sqlite = b.addStaticLibrary("sqlite_api", null);
-    sqlite.addCSourceFiles(
+    if (!(target.isWindows() or builtin.os.tag == .windows)){
+        static.defineCMacro("BUILD_JEMALLOC_EXTENSION", "TRUE");
+        static.addIncludePath("extension/jemalloc/include");
+        static.addIncludePath("extension/jemalloc/jemalloc/include"); 
+    }
+ 
+    const sqlite_api = b.addStaticLibrary("sqlite_api", null);
+    sqlite_api.addCSourceFiles(
         (try iterateFiles(b, "tools/sqlite3_api_wrapper")).items, &.{});
     if (target.isWindows()){
-        sqlite.addCSourceFile(
+        sqlite_api.addCSourceFile(
             "tools/sqlite3_api_wrapper/sqlite3/os_win.c", 
             &.{});}    
-    sqlite.addIncludePath("extension");
-    sqlite.addIncludePath("extension/httpfs/include");
-    sqlite.addIncludePath("extension/icu/include");
-    sqlite.addIncludePath("extension/icu/third_party/icu/common");
-    sqlite.addIncludePath("extension/icu/third_party/icu/i18n");
-    sqlite.addIncludePath("extension/parquet/include");
-    sqlite.addIncludePath("third_party/libpg_query/include");
-    sqlite.addIncludePath("tools/sqlite3_api_wrapper/include");
-    sqlite.addIncludePath("tools/sqlite3_api_wrapper/sqlite3_udf_api/include");
-    sqlite.addIncludePath("tools/sqlite3_api_wrapper/sqlite3");
-    sqlite.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
-    sqlite.defineCMacro("BUILD_ICU_EXTENSION", "ON");
-    sqlite.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
-    sqlite.defineCMacro("SQLITE_SHELL_IS_UTF8", null);
-    sqlite.linkLibrary(static);
-    sqlite.linkLibrary(utf8proc);
-    _ = try basicSetup(sqlite, mode, target);
-    sqlite.linkLibC();
-    const sqlite_step = b.step("sqlite","Compiling Static library");
-    sqlite_step.dependOn(&sqlite.step);
-    sqlite_step.dependOn(&static.step);
-    sqlite_step.dependOn(&utf8proc.step);
+    else{
+        sqlite_api.defineCMacro("BUILD_JEMALLOC_EXTENSION", "TRUE");
+        sqlite_api.addIncludePath("extension/jemalloc/include");
+        sqlite_api.addIncludePath("extension/jemalloc/jemalloc/include"); 
+  
+    }
+    sqlite_api.addIncludePath("extension");
+    sqlite_api.addIncludePath("extension/httpfs/include");
+    sqlite_api.addIncludePath("extension/icu/include");
+    sqlite_api.addIncludePath("extension/icu/third_party/icu/common");
+    sqlite_api.addIncludePath("extension/icu/third_party/icu/i18n");
+    sqlite_api.addIncludePath("extension/parquet/include");
+    sqlite_api.addIncludePath("third_party/catch");
+    sqlite_api.addIncludePath("third_party/libpg_query/include");
+    sqlite_api.addIncludePath("tools/sqlite3_api_wrapper/include");
+    sqlite_api.addIncludePath("tools/sqlite3_api_wrapper/sqlite3_udf_api/include");
+    sqlite_api.addIncludePath("tools/sqlite3_api_wrapper/test/include");
+    sqlite_api.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
+    sqlite_api.defineCMacro("BUILD_ICU_EXTENSION", "ON");
+    sqlite_api.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
+    sqlite_api.defineCMacro("SQLITE_SHELL_IS_UTF8", null);
+    sqlite_api.defineCMacro("USE_DUCKDB_SHELL_WRAPPER", null);
+    sqlite_api.linkLibrary(static);
+    sqlite_api.linkLibrary(utf8proc);
+    _ = try basicSetup(sqlite_api, mode, target);
+    sqlite_api.linkLibC();
     
 // shell aka DuckDBClient
     const shell = b.addExecutable("duckdb", null);
@@ -280,6 +244,8 @@ pub fn build(b: *std.build.Builder) !void {
         shell.addCSourceFile(
             "tools/shell/linenoise.cpp",&.{});
         shell.defineCMacro("HAVE_LINENOISE", "1");
+        shell.defineCMacro("BUILD_JEMALLOC_EXTENSION", "TRUE");
+        shell.linkLibrary(jemalloc_extension);
     }
     shell.linkLibrary(fastpforlib);
     shell.linkLibrary(fmt);
@@ -289,7 +255,7 @@ pub fn build(b: *std.build.Builder) !void {
     shell.linkLibrary(miniz);    
     shell.linkLibrary(pg_query);    
     shell.linkLibrary(re2);
-    shell.linkLibrary(sqlite);
+    shell.linkLibrary(sqlite_api);
     shell.linkLibrary(static);
     shell.linkLibrary(utf8proc);
     shell.linkLibrary(parquet_extension);
@@ -308,7 +274,7 @@ fn iterateFiles(b: *std.build.Builder, path: []const u8)!std.ArrayList([]const u
     var out: [256] u8 = undefined;
     const exclude_files:[]const[]const u8 = &.{
         "grammar.cpp","symbols.cpp","os_win.c","linenoise.cpp","parquetcli.cpp",
-        "utf8proc_data.cpp","test_sqlite3_api_wrapper.cpp","test_sqlite3_udf_api_wrapper.cpp",};
+        "utf8proc_data.cpp","test_sqlite3_api_wrapper.cpp"};
     const allowed_exts: []const[]const u8 =  &.{".c", ".cpp", ".cxx", ".c++", ".cc"};
     while (try walker.next()) |entry| {
         const ext = std.fs.path.extension(entry.basename);
