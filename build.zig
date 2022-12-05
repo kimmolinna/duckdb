@@ -100,7 +100,7 @@ pub fn build(b: *std.build.Builder) !void {
     libduckdb.addIncludePath("extension/parquet/include");
     libduckdb.addIncludePath("third_party/httplib");
     libduckdb.addIncludePath("third_party/libpg_query/include");
-    libduckdb.addIncludePath("third_party/openssl/include"); 
+    libduckdb.addIncludePath("/opt/homebrew/opt/openssl@3/"); 
     libduckdb.defineCMacro("BUILD_HTTPFS_EXTENSION", "TRUE");
     libduckdb.defineCMacro("BUILD_ICU_EXTENSION", "TRUE");
     libduckdb.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
@@ -109,6 +109,7 @@ pub fn build(b: *std.build.Builder) !void {
     libduckdb.defineCMacro("DUCKDB",null);
 
     if (target.isWindows() or builtin.os.tag == .windows){
+        libduckdb.addIncludePath("third_party/openssl/include");
         libduckdb.addObjectFile("third_party/openssl/lib/libcrypto.lib");
         libduckdb.addObjectFile("third_party/openssl/lib/libssl.lib");
         libduckdb.addObjectFile("third_party/win64/ws2_32.lib");
@@ -131,6 +132,7 @@ pub fn build(b: *std.build.Builder) !void {
     }
 
     if (target.isLinux() or builtin.os.tag == .linux){
+        libduckdb.addIncludePath("third_party/openssl/include");
         libduckdb.defineCMacro("BUILD_JEMALLOC_EXTENSION", "TRUE");
         libduckdb.addIncludePath("extension/jemalloc/include");
         libduckdb.addIncludePath("extension/jemalloc/jemalloc/include"); 
@@ -140,15 +142,10 @@ pub fn build(b: *std.build.Builder) !void {
     }
 
     if (target.isDarwin() or builtin.os.tag == .macos){
-        libduckdb.addObjectFile("third_party/openssl/lib/libcrypto.a");
-        libduckdb.addObjectFile("third_party/openssl/lib/libssl.a");
-        libduckdb.step.dependOn(
-            &b.addInstallFileWithDir(
-                .{.path = "third_party/openssl/lib/libcrypto.3.dylib"},
-                .bin,
-                "libcrypto.3.dylib",
-            ).step
-        );
+        libduckdb.addIncludePath("/opt/homebrew/opt/openssl@3/"); 
+        libduckdb.addLibraryPath("/opt/homebrew/opt/openssl@3/lib");
+        libduckdb.linkSystemLibrary("ssl");
+        libduckdb.linkSystemLibrary("crypto");
     }
 
     libduckdb.linkLibrary(fastpforlib);
@@ -228,12 +225,12 @@ pub fn build(b: *std.build.Builder) !void {
     shell.addIncludePath("extension/icu/include");
     shell.addIncludePath("extension/parquet/include");
     shell.addIncludePath("third_party/libpg_query/include");
-    shell.addIncludePath("third_party/openssl/include");
     shell.addIncludePath("tools/shell/include");
     shell.addIncludePath("tools/sqlite3_api_wrapper/include");
     shell.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
     shell.defineCMacro("SQLITE_OMIT_LOAD_EXTENSION", "1");
     if (target.isWindows() or builtin.os.tag == .windows){
+        shell.addIncludePath("third_party/openssl/include");
         shell.addObjectFile("third_party/openssl/lib/libcrypto.lib");
         shell.addObjectFile("third_party/openssl/lib/libssl.lib");
         shell.addObjectFile("third_party/win64/ws2_32.lib");
@@ -254,7 +251,8 @@ pub fn build(b: *std.build.Builder) !void {
             ).step
         );
     }
-    if (target.isLinux()){
+    if (target.isLinux() or builtin.os.tag == .linux){
+        shell.addIncludePath("third_party/openssl/include");
         shell.linkSystemLibrary("ssl");
         shell.linkSystemLibrary("crypto");
         shell.addCSourceFile(
@@ -263,8 +261,9 @@ pub fn build(b: *std.build.Builder) !void {
         shell.defineCMacro("BUILD_JEMALLOC_EXTENSION", "TRUE");
         shell.linkLibrary(jemalloc_extension);
     }  
-    if (target.isDarwin()){
-        shell.addLibraryPath("third_party/openssl/lib");
+    if (target.isDarwin() or builtin.os.tag == .macos){
+        shell.addIncludePath("/opt/homebrew/opt/openssl@3/include");
+        shell.addLibraryPath("/opt/homebrew/opt/openssl@3/lib");
         shell.linkSystemLibrary("ssl");
         shell.linkSystemLibrary("crypto");
         shell.addCSourceFile(
