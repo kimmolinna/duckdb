@@ -266,9 +266,10 @@ pub fn build(b: *std.build.Builder) !void {
         shell.addLibraryPath("/opt/homebrew/opt/openssl@3/lib");
         shell.linkSystemLibrary("ssl");
         shell.linkSystemLibrary("crypto");
-        shell.addCSourceFile(
-            "tools/shell/linenoise.cpp",&.{});
-        shell.defineCMacro("HAVE_LINENOISE", "1");
+        // commented until @kubkon fixes bug #13985
+        // shell.addCSourceFile( 
+        //    "tools/shell/linenoise.cpp",&.{});
+        // shell.defineCMacro("HAVE_LINENOISE", "1");
     }
 
     shell.linkLibrary(fastpforlib);
