@@ -59,11 +59,9 @@ string MacroFunction::ValidateArguments(MacroFunction &macro_def, const string &
 
 	// Add the default values for parameters that have defaults, that were not explicitly assigned to
 	for (auto it = macro_def.default_parameters.begin(); it != macro_def.default_parameters.end(); it++) {
-		auto &parameter_name = it->first;
-		auto &parameter_default = it->second;
-		if (!defaults.count(parameter_name)) {
+		if (defaults.find(it->first) == defaults.end()) {
 			// This parameter was not set yet, set it with the default value
-			defaults[parameter_name] = parameter_default->Copy();
+			defaults[it->first] = it->second->Copy();
 		}
 	}
 
