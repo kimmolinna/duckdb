@@ -347,6 +347,17 @@ unique_ptr<ColumnReader> ParquetReader::CreateReaderRecursive(idx_t depth, idx_t
 			return make_uniq<ListColumnReader>(*this, list_type, s_ele, this_idx, max_define, max_repeat,
 			                                   std::move(element_reader));
 		}
+
+		// if this is a hive partition col, we should not read it at all but instead do a constant reader.
+		if (parquet_options.hive_partitioning && hive_map && depth == 1) {
+			auto lookup = hive_map->find(s_ele.name);
+			if (lookup != hive_map->end()) {
+				Value val = Value(lookup->second);
+				return make_unique<GeneratedConstantColumnReader>(
+				    *this, LogicalType::VARCHAR, SchemaElement(), next_file_idx++, max_define, max_repeat, val);;
+			}
+		}
+
 		// TODO check return value of derive type or should we only do this on read()
 		return ColumnReader::CreateReader(*this, DeriveLogicalType(s_ele), s_ele, next_file_idx++, max_define,
 		                                  max_repeat);
@@ -383,7 +394,15 @@ unique_ptr<ColumnReader> ParquetReader::CreateReader() {
 	}
 	if (parquet_options.file_row_number) {
 		root_struct_reader.child_readers.push_back(
-		    make_uniq<RowNumberColumnReader>(*this, LogicalType::BIGINT, SchemaElement(), next_file_idx, 0, 0));
+		    make_unique<RowNumberColumnReader>(*this, LogicalType::BIGINT, SchemaElement(), next_file_idx, 0, 0));
+	}
+
+	if (parquet_options.hive_partitioning) {
+		for (auto &partition : *hive_map) {
+			Value val = Value(partition.second);
+			root_struct_reader.child_readers.push_back(make_unique<GeneratedConstantColumnReader>(
+			    *this, LogicalType::VARCHAR, SchemaElement(), next_file_idx, 0, 0, val));
+		}
 	}
 
 	return ret;
@@ -418,6 +437,69 @@ void ParquetReader::InitializeSchema() {
 		return_types.emplace_back(LogicalType::BIGINT);
 		names.emplace_back("file_row_number");
 	}
+
+	// Add generated constant column for filename
+	if (parquet_options.hive_partitioning) {
+		for (auto &part : *hive_map) {
+			// We need to lookup the hive col in the cols of the file to avoid duplicating columns that are both
+			// in the file and the hive path
+			auto lookup = std::find_if(child_types.begin(), child_types.end(),
+			                           [&part](const std::pair<std::string, LogicalType>& x) { return x.first == part.first;});
+			if (lookup == child_types.end()) {
+				return_types.emplace_back(LogicalType::VARCHAR);
+				names.emplace_back(part.first);
+			}
+		}
+	}
+
+	D_ASSERT(!names.empty());
+	D_ASSERT(!return_types.empty());
+	if (!has_expected_types) {
+		return;
+	}
+	if (!has_expected_names && has_expected_types) {
+		// we ONLY have expected types, but no expected names
+		// in this case we need all types to match in-order
+		if (return_types.size() != expected_types.size()) {
+			throw FormatException("column count mismatch: expected %d columns but found %d", expected_types.size(),
+			                      return_types.size());
+		}
+		for (idx_t col_idx = 0; col_idx < return_types.size(); col_idx++) {
+			if (return_types[col_idx] == expected_types[col_idx]) {
+				continue;
+			}
+			// type mismatch: have to add a cast
+			cast_map[col_idx] = expected_types[col_idx];
+		}
+		return;
+	}
+	D_ASSERT(column_ids.size() > 0);
+	// we have expected types: create a map of name -> column index
+	unordered_map<string, idx_t> name_map;
+	for (idx_t col_idx = 0; col_idx < names.size(); col_idx++) {
+		name_map[names[col_idx]] = col_idx;
+	}
+	// now for each of the expected names, look it up in the name map and fill the column_id_map
+	D_ASSERT(column_id_map.empty());
+	for (idx_t i = 0; i < column_ids.size(); i++) {
+		if (IsRowIdColumnId(column_ids[i])) {
+			continue;
+		}
+		auto &expected_name = expected_names[column_ids[i]];
+		auto &expected_type = expected_types[column_ids[i]];
+		auto entry = name_map.find(expected_name);
+		if (entry == name_map.end()) {
+			throw FormatException("schema mismatch in Parquet glob: column \"%s\" was read from the original file "
+			                      "\"%s\", but could not be found in file \"%s\"",
+			                      expected_name, initial_filename_p, file_name);
+		}
+		auto column_idx = entry->second;
+		column_id_map.push_back(column_idx);
+		if (expected_type != return_types[column_idx]) {
+			// type mismatch: have to add a cast
+			cast_map[column_idx] = expected_type;
+		}
+	}
 }
 
 ParquetOptions::ParquetOptions(ClientContext &context) {
@@ -451,14 +533,11 @@ ParquetReader::ParquetReader(ClientContext &context_p, string file_name_p, Parqu
 		}
 	}
 
-	InitializeSchema();
-}
+	if (parquet_options.hive_partitioning) {
+		hive_map = make_unique<std::map<string, string>>(HivePartitioning::Parse(file_name));
+	}
 
-ParquetReader::ParquetReader(ClientContext &context_p, ParquetOptions parquet_options_p,
-                             shared_ptr<ParquetFileMetadataCache> metadata_p)
-    : fs(FileSystem::GetFileSystem(context_p)), allocator(BufferAllocator::Get(context_p)),
-      metadata(std::move(metadata_p)), parquet_options(parquet_options_p) {
-	InitializeSchema();
+	InitializeSchema(expected_names, expected_types_p, column_ids, initial_filename_p);
 }
 
 ParquetReader::~ParquetReader() {
