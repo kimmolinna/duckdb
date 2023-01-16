@@ -1387,29 +1387,8 @@ unique_ptr<ColumnReader> ColumnReader::CreateReader(ParquetReader &reader, const
 		                                                                          max_define, max_repeat);
 	case LogicalTypeId::TIME:
 	case LogicalTypeId::TIME_TZ:
-		if (schema_p.__isset.logicalType && schema_p.logicalType.__isset.TIME) {
-			if (schema_p.logicalType.TIME.unit.__isset.MILLIS) {
-				return make_uniq<CallbackColumnReader<int32_t, dtime_t, ParquetIntToTimeMs>>(
-				    reader, type_p, schema_p, file_idx_p, max_define, max_repeat);
-			} else if (schema_p.logicalType.TIME.unit.__isset.MICROS) {
-				return make_uniq<CallbackColumnReader<int64_t, dtime_t, ParquetIntToTime>>(
-				    reader, type_p, schema_p, file_idx_p, max_define, max_repeat);
-			} else if (schema_p.logicalType.TIME.unit.__isset.NANOS) {
-				return make_uniq<CallbackColumnReader<int64_t, dtime_t, ParquetIntToTimeNs>>(
-				    reader, type_p, schema_p, file_idx_p, max_define, max_repeat);
-			}
-		} else if (schema_p.__isset.converted_type) {
-			switch (schema_p.converted_type) {
-			case ConvertedType::TIME_MICROS:
-				return make_uniq<CallbackColumnReader<int64_t, dtime_t, ParquetIntToTime>>(
-				    reader, type_p, schema_p, file_idx_p, max_define, max_repeat);
-			case ConvertedType::TIME_MILLIS:
-				return make_uniq<CallbackColumnReader<int32_t, dtime_t, ParquetIntToTimeMs>>(
-				    reader, type_p, schema_p, file_idx_p, max_define, max_repeat);
-			default:
-				break;
-			}
-		}
+		return make_unique<CallbackColumnReader<int64_t, dtime_t, ParquetIntToTime>>(
+		    reader, type_p, schema_p, file_idx_p, max_define, max_repeat);
 	case LogicalTypeId::BLOB:
 	case LogicalTypeId::VARCHAR:
 		return make_uniq<StringColumnReader>(reader, type_p, schema_p, file_idx_p, max_define, max_repeat);
