@@ -10,73 +10,125 @@ pub fn build(b: *std.build.Builder) !void {
 
     // Standard release options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
-    const mode = b.standardReleaseOptions();
+    const optimize = b.standardOptimizeOption(.{});
 
     var child = std.ChildProcess.init(&[_][]const u8{"python3", "scripts/generate_version_hpp.py"},std.heap.page_allocator);
     try child.spawn();
     _ = try child.wait();
 
-    const fastpforlib = b.addStaticLibrary("fastpforlib", null);
+    const fastpforlib = b.addStaticLibrary(.{
+        .name = "fastpforlib",
+        .target = target,
+        .optimize = optimize,
+    });
     fastpforlib.addCSourceFiles((try iterateFiles(b, "third_party/fastpforlib")).items, &.{});
-    _ = try basicSetup(fastpforlib, mode, target);
+    _ = try basicSetup(fastpforlib);
  
-    const fmt = b.addStaticLibrary("fmt", null);
+    const fmt = b.addStaticLibrary(.{
+        .name = "fmt",
+        .target = target,
+        .optimize = optimize,
+    });
     fmt.addCSourceFiles((try iterateFiles(b, "third_party/fmt")).items, &.{});
-    _ = try basicSetup(fmt, mode, target);
+    _ = try basicSetup(fmt);
 
-    const fsst = b.addStaticLibrary("fsst", null);
+    const fsst = b.addStaticLibrary(.{
+        .name = "fsst",
+        .target = target,
+        .optimize = optimize,
+    });
     fsst.addCSourceFiles((try iterateFiles(b, "third_party/fsst")).items, &.{});
-    _ = try basicSetup(fsst, mode, target);
+    _ = try basicSetup(fsst);
 
-    const hyperloglog = b.addStaticLibrary("hyperloglog", null);
+    const hyperloglog = b.addStaticLibrary(.{
+        .name = "hyperloglog",
+        .target = target,
+        .optimize = optimize,
+    });
     hyperloglog.addCSourceFiles((try iterateFiles(b, "third_party/hyperloglog")).items, &.{});
-    _ = try basicSetup(hyperloglog, mode, target);
+    _ = try basicSetup(hyperloglog);
 
-    const mbedtls = b.addStaticLibrary("mbedtls", null);
+    const mbedtls = b.addStaticLibrary(.{
+        .name = "mbedtls",
+        .target = target,
+        .optimize = optimize,
+    });
     mbedtls.addCSourceFiles((try iterateFiles(b, "third_party/mbedtls")).items, &.{});
-    _ = try basicSetup(mbedtls, mode, target);
+    _ = try basicSetup(mbedtls);
 
-    const miniz = b.addStaticLibrary("miniz", null);
+    const miniz = b.addStaticLibrary(.{
+        .name = "miniz",
+        .target = target,
+        .optimize = optimize,
+    });
     miniz.addCSourceFiles((try iterateFiles(b, "third_party/miniz")).items, &.{});
-    _ = try basicSetup(miniz, mode, target);
+    _ = try basicSetup(miniz);
 
-    const pg_query = b.addStaticLibrary("pg_query", null);
+    const pg_query = b.addStaticLibrary(.{
+        .name = "pg_query",
+        .target = target,
+        .optimize = optimize,
+    });
     pg_query.addCSourceFiles((try iterateFiles(b, "third_party/libpg_query")).items, &.{});
     pg_query.addIncludePath("third_party/libpg_query/include");
-    _ = try basicSetup(pg_query, mode, target);
+    _ = try basicSetup(pg_query);
 
-    const re2 = b.addStaticLibrary("re2", null);
+    const re2 = b.addStaticLibrary(.{
+        .name = "re2",
+        .target = target,
+        .optimize = optimize,
+    });
     re2.addCSourceFiles((try iterateFiles(b, "third_party/re2")).items, &.{});
-    _ = try basicSetup(re2, mode, target);
+    _ = try basicSetup(re2);
 
-    const utf8proc = b.addStaticLibrary("utf8proc", null);
+    const utf8proc = b.addStaticLibrary(.{
+        .name = "utf8proc",
+        .target = target,
+        .optimize = optimize,
+    });
     utf8proc.addCSourceFiles((try iterateFiles(b, "third_party/utf8proc")).items, &.{});
-    _ = try basicSetup(utf8proc, mode, target);
+    _ = try basicSetup(utf8proc);
 
-    const httpfs_extension = b.addStaticLibrary("httpfs_extension", null);
+    const httpfs_extension = b.addStaticLibrary(.{
+        .name = "httpfs_extension",
+        .target = target,
+        .optimize = optimize,
+    });
     httpfs_extension.addCSourceFiles((try iterateFiles(b, "extension/httpfs")).items, &.{});
     httpfs_extension.addIncludePath("extension/httpfs/include");
     httpfs_extension.addIncludePath("third_party/httplib");
     httpfs_extension.addIncludePath("third_party/openssl/include");
     httpfs_extension.addIncludePath("third_party/picohash");
-    _ = try basicSetup(httpfs_extension, mode, target);
+    _ = try basicSetup(httpfs_extension);
 
-    const icu_extension = b.addStaticLibrary("icu_extension", null);
+    const icu_extension = b.addStaticLibrary(.{
+        .name = "icu_extension",
+        .target = target,
+        .optimize = optimize,
+    });
     icu_extension.addCSourceFiles((try iterateFiles(b, "extension/icu")).items, &.{});
     icu_extension.addIncludePath("extension/icu/include");
     icu_extension.addIncludePath("extension/icu/third_party/icu/common");
     icu_extension.addIncludePath("extension/icu/third_party/icu/i18n");
-    _ = try basicSetup(icu_extension, mode, target);
+    _ = try basicSetup(icu_extension);
 
-    const jemalloc_extension = b.addStaticLibrary("jemalloc_extension", null);
+    const jemalloc_extension = b.addStaticLibrary(.{
+        .name = "jemalloc_extension",
+        .target = target,
+        .optimize = optimize,
+    });
     jemalloc_extension.addCSourceFiles((try iterateFiles(b, "extension/jemalloc")).items, &.{});
     jemalloc_extension.addIncludePath("extension/jemalloc/include");
     jemalloc_extension.addIncludePath("extension/jemalloc/jemalloc/include");
     if ((target.isLinux() or builtin.os.tag == .linux)){
-        _ = try basicSetup(jemalloc_extension, mode, target);
+        _ = try basicSetup(jemalloc_extension);
     }
 
-    const parquet_extension = b.addStaticLibrary("parquet_extension", null);
+    const parquet_extension = b.addStaticLibrary(.{
+        .name = "parquet_extension",
+        .target = target,
+        .optimize = optimize,
+    });
     parquet_extension.addCSourceFiles((try iterateFiles(b, "extension/parquet")).items, &.{});
     parquet_extension.addCSourceFiles((try iterateFiles(b, "third_party/parquet")).items, &.{});
     parquet_extension.addCSourceFiles((try iterateFiles(b, "third_party/snappy")).items, &.{});
@@ -87,11 +139,15 @@ pub fn build(b: *std.build.Builder) !void {
     parquet_extension.addIncludePath("third_party/snappy");    
     parquet_extension.addIncludePath("third_party/thrift");    
     parquet_extension.addIncludePath("third_party/zstd/include");    
-    _ = try basicSetup(parquet_extension, mode, target);
+    _ = try basicSetup(parquet_extension);
   
     const duckdb_sources = try iterateFiles(b, "src");    
 
-    const libduckdb = b.addSharedLibrary("duckdb",null, .unversioned);
+    const libduckdb = b.addSharedLibrary(.{
+        .name = "duckdb",
+        .target = target,
+        .optimize = optimize,
+    });
     libduckdb.addCSourceFiles(duckdb_sources.items, &.{});
     libduckdb.addIncludePath("extension/httpfs/include");
     libduckdb.addIncludePath("extension/icu/include");
@@ -160,7 +216,7 @@ pub fn build(b: *std.build.Builder) !void {
     libduckdb.linkLibrary(parquet_extension);
     libduckdb.linkLibrary(httpfs_extension);
     libduckdb.linkLibrary(icu_extension);
-    _ = try basicSetup(libduckdb, mode, target);
+    _ = try basicSetup(libduckdb);
     libduckdb.linkLibC();
 }
 
@@ -194,7 +250,7 @@ fn iterateFiles(b: *std.build.Builder, path: []const u8)!std.ArrayList([]const u
     return files;
 }
 
-fn basicSetup(in: *std.build.LibExeObjStep, mode: std.builtin.Mode,target: std.zig.CrossTarget)!void {
+fn basicSetup(in: *std.build.LibExeObjStep)!void {
     const include_dirs= [_][]const u8{
         "src/include",
         "third_party/concurrentqueue",
@@ -218,9 +274,7 @@ fn basicSetup(in: *std.build.LibExeObjStep, mode: std.builtin.Mode,target: std.z
     }
     in.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
     in.linkLibCpp();
-    in.setBuildMode(mode);
     in.force_pic = true;
-    in.setTarget(target);
     in.strip = true;
     in.install();
 }
