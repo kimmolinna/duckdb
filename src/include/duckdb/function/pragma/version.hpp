@@ -1,3 +1,3 @@
 #pragma once
-#define DUCKDB_SOURCE_ID "5ec94b63aa"
-#define DUCKDB_VERSION "v0.6.2-dev2185"
+#define DUCKDB_SOURCE_ID "33dcd3b0e1"
+#define DUCKDB_VERSION "v0.7.1-dev125"
