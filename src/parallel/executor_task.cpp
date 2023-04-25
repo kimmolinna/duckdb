@@ -19,8 +19,31 @@ void ExecutorTask::Deschedule() {
 }
 
 void ExecutorTask::Reschedule() {
-	auto this_ptr = shared_from_this();
-	executor.RescheduleTask(this_ptr);
+//	Printer::Print("Reschedule task " + to_string((int64_t)((void*)this)));
+	// Register the Descheduled task at the executor, ensuring the Task is kept alive while the executor is
+	executor.RescheduleTask(shared_from_this());
+};
+
+InterruptState::InterruptState() {}
+
+InterruptCallbackState InterruptState::GetCallbackState() {
+#ifdef DEBUG
+	if (!current_task.lock()) {
+		throw InternalException("GetCallbackState called on interrupt state without current_task pointer");
+	}
+#endif
+	return {current_task};
+}
+
+void InterruptState::Callback(InterruptCallbackState callback_state) {
+	//! Check if db and task are still alive and kicking
+	auto task = callback_state.current_task.lock();
+
+	if (!task) {
+		return;
+	}
+
+	task->Reschedule();
 }
 
 TaskExecutionResult ExecutorTask::Execute(TaskExecutionMode mode) {

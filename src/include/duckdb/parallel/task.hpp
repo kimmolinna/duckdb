@@ -19,7 +19,30 @@ struct ProducerToken;
 
 enum class TaskExecutionMode : uint8_t { PROCESS_ALL, PROCESS_PARTIAL };
 
-enum class TaskExecutionResult : uint8_t { TASK_FINISHED, TASK_NOT_FINISHED, TASK_ERROR, TASK_BLOCKED };
+enum class TaskExecutionResult : uint8_t { TASK_FINISHED, TASK_NOT_FINISHED, TASK_ERROR, TASK_BLOCKED};
+
+//! State that is passed to the asynchronous callback that signals task can be rescheduled
+struct InterruptCallbackState {
+	weak_ptr<Task> current_task;
+};
+
+//! State of an interrupt, allows the interrupting code to specify how the interrupt should be handled
+struct InterruptState {
+	InterruptState();
+
+	void Reset() {
+		allow_async = true;
+	}
+
+	//! Generate the InterruptCallbackState required for the callback to signal that the operator is ready to
+	//! produce/consume tuples again.
+	InterruptCallbackState GetCallbackState();
+	//! Signal that the operator is ready to produce/consume tuples.
+	static void Callback(InterruptCallbackState callback_state);
+
+	weak_ptr<Task> current_task;
+	bool allow_async = true;
+};
 
 //! Generic parallel task
 class Task : public std::enable_shared_from_this<Task> {
