@@ -697,7 +697,7 @@ extern U_IMPORT char *U_TZNAME[];
 
 #define CHECK_LOCALTIME_LINK 1
 #if U_PLATFORM_IS_DARWIN_BASED
-#include "tzfile.h"
+#include <tzfile.h>
 #define TZZONEINFO      (TZDIR "/")
 #elif U_PLATFORM == U_PF_SOLARIS
 #define TZDEFAULT       "/etc/localtime"

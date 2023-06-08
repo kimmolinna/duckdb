@@ -386,7 +386,7 @@ SinkResultType PhysicalHashAggregate::Sink(ExecutionContext &context, DataChunk 
 		auto &grouping_gstate = gstate.grouping_states[i];
 		auto &grouping_lstate = llstate.grouping_states[i];
 		InterruptState interrupt_state;
-		OperatorSinkInput sink_input{*grouping_gstate.table_state, *grouping_lstate.table_state, interrupt_state};
+		OperatorSinkInput sink_input {*grouping_gstate.table_state, *grouping_lstate.table_state, interrupt_state};
 
 		auto &grouping = groupings[i];
 		auto &table = grouping.table_data;
@@ -895,7 +895,8 @@ SourceResultType PhysicalHashAggregate::GetData(ExecutionContext &context, DataC
 		auto &grouping_gstate = sink_gstate.grouping_states[radix_idx];
 
 		InterruptState interrupt_state;
-		OperatorSourceInput source_input { *gstate.radix_states[radix_idx], *lstate.radix_states[radix_idx], interrupt_state };
+		OperatorSourceInput source_input {*gstate.radix_states[radix_idx], *lstate.radix_states[radix_idx],
+		                                  interrupt_state};
 		auto res = radix_table.GetData(context, chunk, *grouping_gstate.table_state, source_input);
 		if (chunk.size() != 0) {
 			return SourceResultType::HAVE_MORE_OUTPUT;

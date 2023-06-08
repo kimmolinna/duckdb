@@ -11,19 +11,14 @@ unique_ptr<PhysicalOperator> PhysicalPlanGenerator::CreatePlan(LogicalCopyToFile
 	bool preserve_insertion_order = PhysicalPlanGenerator::PreserveInsertionOrder(context, *plan);
 	bool supports_batch_index = PhysicalPlanGenerator::UseBatchIndex(context, *plan);
 	auto &fs = FileSystem::GetFileSystem(context);
-	op.file_path = fs.ExpandPath(op.file_path, FileSystem::GetFileOpener(context));
-
+	op.file_path = fs.ExpandPath(op.file_path);
 	if (op.use_tmp_file) {
 		op.file_path += ".tmp";
 	}
-	// COPY from select statement to file
-	auto copy =
-	    make_unique<PhysicalCopyToFile>(op.types, op.function, std::move(op.bind_data), op.estimated_cardinality);
-	copy->file_path = op.file_path;
-	copy->use_tmp_file = op.use_tmp_file;
-	copy->per_thread_output = op.per_thread_output;
-	if (op.function.parallel) {
-		copy->parallel = op.function.parallel(context, *copy->bind_data);
+	if (op.per_thread_output || op.partition_output || !op.partition_columns.empty() || op.overwrite_or_ignore) {
+		// hive-partitioning/per-thread output does not care about insertion order, and does not support batch indexes
+		preserve_insertion_order = false;
+		supports_batch_index = false;
 	}
 	auto mode = CopyFunctionExecutionMode::REGULAR_COPY_TO_FILE;
 	if (op.function.execution_mode) {

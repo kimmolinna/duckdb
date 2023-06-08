@@ -60,7 +60,7 @@ public:
 	//! This flushes profiler states
 	void PullFinalize();
 
-	//! Registers the task in the interrupt_state to ensure Source/Sink interrupts will block the correct Task
+	//! Registers the task in the interrupt_state to allow Source/Sink operators to block the task
 	void SetTaskForInterrupts(weak_ptr<Task> current_task);
 
 private:
@@ -80,8 +80,6 @@ private:
 	unique_ptr<LocalSourceState> local_source_state;
 	//! The local sink state (if any)
 	unique_ptr<LocalSinkState> local_sink_state;
-	//! The interrupt state, holding required information for sink/source operators to block
-	InterruptState interrupt_state;
 	//! The interrupt state, holding required information for sink/source operators to block
 	InterruptState interrupt_state;
 
@@ -119,7 +117,6 @@ private:
 
 	//! Reset the operator index to the first operator
 	void GoToSource(idx_t &current_idx, idx_t initial_idx);
-	SourceResultType FetchFromSource(DataChunk &result);
 	SourceResultType FetchFromSource(DataChunk &result);
 
 	void FinishProcessing(int32_t operator_idx = -1);
