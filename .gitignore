@@ -341,3 +341,5 @@ zig-cache/*
 
 # .db files
 *.db
+
+src/include/duckdb/function/pragma/version.hpp
