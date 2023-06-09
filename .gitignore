@@ -339,5 +339,5 @@ __nvm
 zig-out/*
 zig-cache/*
 
-# Version file
-src/include/duckdb/function/pragma/version.hpp
+# .db files
+*.db
