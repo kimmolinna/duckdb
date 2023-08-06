@@ -38,6 +38,7 @@ libcrypto.so
 ```
 And then you are ready to build duckdb
 ```bash
-zig build -Drelease-fast=true
-zig build -Drelease-fast=true -Dtarget=x86_64-windows-gnu
+zig build -Doptimize=ReleaseFast # using build.zig
+zig build --build-file build_shell.zig -Doptimize=ReleaseFast  # define build-file 
+zig build --build-file build_shell.zig -Doptimize=ReleaseFast -Dtarget=x86_64-windows-gnu
 ```
