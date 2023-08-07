@@ -180,7 +180,7 @@ pub fn build(b: *std.build.Builder) !void {
         sqlite_api.addIncludePath("tools/sqlite3_api_wrapper/sqlite3");
         sqlite_api.addCSourceFile(
             "tools/sqlite3_api_wrapper/sqlite3/os_win.c", 
-            &.{""});}    
+            &.{"-Wno-error=implicit-function-declaration"});}    
     if (target.isLinux() or builtin.os.tag == .linux){
         sqlite_api.defineCMacro("BUILD_JEMALLOC_EXTENSION", "TRUE");
         sqlite_api.addIncludePath("extension/jemalloc/include");
@@ -201,7 +201,7 @@ pub fn build(b: *std.build.Builder) !void {
     sqlite_api.defineCMacro("BUILD_ICU_EXTENSION", "ON");
     sqlite_api.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
     sqlite_api.defineCMacro("SQLITE_SHELL_IS_UTF8", null);
-    sqlite_api.defineCMacro("USE_DUCKDB_SHELL_WRAPPER", "TRuE");
+    sqlite_api.defineCMacro("USE_DUCKDB_SHELL_WRAPPER", "TRUE");
     sqlite_api.linkLibrary(static);
     sqlite_api.linkLibrary(utf8proc);
     _ = try basicSetup(b,sqlite_api);
@@ -280,6 +280,7 @@ pub fn build(b: *std.build.Builder) !void {
     shell.linkLibrary(icu_extension);
     _ = try basicSetup(b,shell);
     shell.linkLibC();
+    shell.linkLibCpp();
     shell.want_lto = false; 
 }
 

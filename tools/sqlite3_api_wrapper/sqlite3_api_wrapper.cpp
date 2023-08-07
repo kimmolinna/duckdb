@@ -31,7 +31,7 @@
 #include <thread>
 
 using namespace duckdb;
-using namespace std;
+//using namespace std;
 
 extern "C" {
 char *sqlite3_print_duckbox(sqlite3_stmt *pStmt, size_t max_rows, size_t max_width, char *null_value, int columnar);

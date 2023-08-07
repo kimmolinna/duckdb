@@ -5,19 +5,24 @@ sudo apt-get install zlib1g zlib1g-dev
 wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
 # Fingerprint: 6084 F3CF 814B 57C1 CF12 EFD5 15CF 4D18 AF4F 7421
 sudo apt-get update
-sudo apt-get install clang-14 libclang-14-dev lldb-14 liblldb-14-dev lld-14 llvm-14 libllvm14 lld-14 liblld-14-dev cmake
-sudo ln -s /usr/bin/clang++-14 /usr/bin/c++
-sudo ln -s /usr/bin/llvm-config-14 /usr/bin/llvm-config
+sudo apt-get install clang-16 libclang-16-dev lldb-16 liblldb-16-dev lld-16 llvm-16 libllvm16 lld-16 liblld-16-dev cmake
+sudo ln -s /usr/bin/clang++-16 /usr/bin/c++
+sudo ln -s /usr/bin/llvm-config-16 /usr/bin/llvm-config
 ```
-
+Macbook:
+```bash
+brew install llvm zstd
+brew link llvm --force 
+```
 Get Zig source from `git clone https://github.com/ziglang/zig` and build it:
 
 ```bash
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DZIG_STATIC_ZLIB=ON
+cmake .. -DZIG_STATIC_LLVM=ON -DCMAKE_PREFIX_PATH="$(brew --prefix llvm);$(brew --prefix zstd)"
 make install
 ```
+
 Add Zig-path to enviromental variables.
 
 Get DuckDB source from `git clone https://github.com/kimmolinna/duckdb-zig-build`
