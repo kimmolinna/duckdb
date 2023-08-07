@@ -64,7 +64,6 @@ pub fn build(b: *std.build.Builder) !void {
         shell.linkSystemLibrary("jemalloc_extension");
     }  
     if (target.isDarwin() or builtin.os.tag == .macos){
-        shell.addIncludePath("/Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/");
         shell.addIncludePath("/opt/homebrew/opt/openssl@3/include");
         shell.addLibraryPath("/opt/homebrew/opt/openssl@3/lib");
         shell.linkSystemLibrary("ssl");
@@ -83,7 +82,7 @@ pub fn build(b: *std.build.Builder) !void {
     shell.linkSystemLibrary("pg_query");    
     shell.linkSystemLibrary("re2");
     shell.linkSystemLibrary("sqlite_api");
-    shell.linkSystemLibrary("static");
+    shell.linkSystemLibrary("duckdb_static");
     shell.linkSystemLibrary("utf8proc");
     shell.linkSystemLibrary("parquet_extension");
     shell.linkSystemLibrary("httpfs_extension");
