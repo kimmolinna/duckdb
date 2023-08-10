@@ -70,7 +70,7 @@ pub fn build(b: *std.build.Builder) !void {
         .optimize = optimize,
     });
     pg_query.addCSourceFiles((try iterateFiles(b, "third_party/libpg_query")).items, &.{});
-    pg_query.addIncludePath("third_party/libpg_query/include");
+    pg_query.addIncludePath(std.build.LazyPath.relative("third_party/libpg_query/include"));
     _ = try basicSetup(b,pg_query);
 
     const re2 = b.addStaticLibrary(.{
@@ -95,10 +95,10 @@ pub fn build(b: *std.build.Builder) !void {
         .optimize = optimize,
     });
     httpfs_extension.addCSourceFiles((try iterateFiles(b, "extension/httpfs")).items, &.{});
-    httpfs_extension.addIncludePath("extension/httpfs/include");
-    httpfs_extension.addIncludePath("third_party/httplib");
-    httpfs_extension.addIncludePath("third_party/openssl/include");
-    httpfs_extension.addIncludePath("third_party/picohash");
+    httpfs_extension.addIncludePath(std.build.LazyPath.relative("extension/httpfs/include"));
+    httpfs_extension.addIncludePath(std.build.LazyPath.relative("third_party/httplib"));
+    httpfs_extension.addIncludePath(std.build.LazyPath.relative("third_party/openssl/include"));
+    httpfs_extension.addIncludePath(std.build.LazyPath.relative("third_party/picohash"));
     _ = try basicSetup(b,httpfs_extension);
 
     const icu_extension = b.addStaticLibrary(.{
@@ -107,9 +107,9 @@ pub fn build(b: *std.build.Builder) !void {
         .optimize = optimize,
     });
     icu_extension.addCSourceFiles((try iterateFiles(b, "extension/icu")).items, &.{});
-    icu_extension.addIncludePath("extension/icu/include");
-    icu_extension.addIncludePath("extension/icu/third_party/icu/common");
-    icu_extension.addIncludePath("extension/icu/third_party/icu/i18n");
+    icu_extension.addIncludePath(std.build.LazyPath.relative("extension/icu/include"));
+    icu_extension.addIncludePath(std.build.LazyPath.relative("extension/icu/third_party/icu/common"));
+    icu_extension.addIncludePath(std.build.LazyPath.relative("extension/icu/third_party/icu/i18n"));
     _ = try basicSetup(b,icu_extension);
 
     const jemalloc_extension = b.addStaticLibrary(.{
@@ -118,8 +118,8 @@ pub fn build(b: *std.build.Builder) !void {
         .optimize = optimize,
     });
     jemalloc_extension.addCSourceFiles((try iterateFiles(b, "extension/jemalloc")).items, &.{});
-    jemalloc_extension.addIncludePath("extension/jemalloc/include");
-    jemalloc_extension.addIncludePath("extension/jemalloc/jemalloc/include");
+    jemalloc_extension.addIncludePath(std.build.LazyPath.relative("extension/jemalloc/include"));
+    jemalloc_extension.addIncludePath(std.build.LazyPath.relative("extension/jemalloc/jemalloc/include"));
     if ((target.isLinux() or builtin.os.tag == .linux)){
         _ = try basicSetup(b,jemalloc_extension);
     }
@@ -134,11 +134,11 @@ pub fn build(b: *std.build.Builder) !void {
     parquet_extension.addCSourceFiles((try iterateFiles(b, "third_party/snappy")).items, &.{});
     parquet_extension.addCSourceFiles((try iterateFiles(b, "third_party/thrift")).items, &.{});
     parquet_extension.addCSourceFiles((try iterateFiles(b, "third_party/zstd")).items, &.{});
-    parquet_extension.addIncludePath("extension/parquet/include");
-    parquet_extension.addIncludePath("third_party/parquet");    
-    parquet_extension.addIncludePath("third_party/snappy");    
-    parquet_extension.addIncludePath("third_party/thrift");    
-    parquet_extension.addIncludePath("third_party/zstd/include");    
+    parquet_extension.addIncludePath(std.build.LazyPath.relative("extension/parquet/include"));
+    parquet_extension.addIncludePath(std.build.LazyPath.relative("third_party/parquet"));    
+    parquet_extension.addIncludePath(std.build.LazyPath.relative("third_party/snappy"));    
+    parquet_extension.addIncludePath(std.build.LazyPath.relative("third_party/thrift"));    
+    parquet_extension.addIncludePath(std.build.LazyPath.relative("third_party/zstd/include"));    
     _ = try basicSetup(b,parquet_extension);
   
     const duckdb_sources = try iterateFiles(b, "src");    
@@ -149,28 +149,31 @@ pub fn build(b: *std.build.Builder) !void {
         .optimize = optimize,
     });
     libduckdb.addCSourceFiles(duckdb_sources.items, &.{});
-    libduckdb.addIncludePath("extension/httpfs/include");
-    libduckdb.addIncludePath("extension/icu/include");
-    libduckdb.addIncludePath("extension/icu/third_party/icu/common");
-    libduckdb.addIncludePath("extension/icu/third_party/icu/i18n");
-    libduckdb.addIncludePath("extension/parquet/include");
-    libduckdb.addIncludePath("third_party/httplib");
-    libduckdb.addIncludePath("third_party/libpg_query/include");
-    libduckdb.addIncludePath("/opt/homebrew/opt/openssl@3/"); 
+    libduckdb.addIncludePath(std.build.LazyPath.relative("/opt/homebrew/opt/openssl@3/")); 
+    libduckdb.addIncludePath(std.build.LazyPath.relative("extension/httpfs/include"));
+    libduckdb.addIncludePath(std.build.LazyPath.relative("extension/icu/include"));
+    libduckdb.addIncludePath(std.build.LazyPath.relative("extension/icu/third_party/icu/common"));
+    libduckdb.addIncludePath(std.build.LazyPath.relative("extension/icu/third_party/icu/i18n"));
+    libduckdb.addIncludePath(std.build.LazyPath.relative("extension/jemalloc/include"));
+    libduckdb.addIncludePath(std.build.LazyPath.relative("extension/jemalloc/jemalloc/include")); 
+    libduckdb.addIncludePath(std.build.LazyPath.relative("extension/parquet/include"));
+    libduckdb.addIncludePath(std.build.LazyPath.relative("third_party/httplib"));
+    libduckdb.addIncludePath(std.build.LazyPath.relative("third_party/libpg_query/include"));
+    libduckdb.addIncludePath(std.build.LazyPath.relative("third_party/openssl/include"));
     libduckdb.defineCMacro("BUILD_HTTPFS_EXTENSION", "TRUE");
     libduckdb.defineCMacro("BUILD_ICU_EXTENSION", "TRUE");
+    libduckdb.defineCMacro("BUILD_JEMALLOC_EXTENSION", "TRUE");
     libduckdb.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
     libduckdb.defineCMacro("duckdb_EXPORTS",null);
     libduckdb.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
     libduckdb.defineCMacro("DUCKDB",null);
-
     if (target.isWindows() or builtin.os.tag == .windows){
-        libduckdb.addIncludePath("third_party/openssl/include");
-        libduckdb.addObjectFile("third_party/openssl/lib/libcrypto.lib");
-        libduckdb.addObjectFile("third_party/openssl/lib/libssl.lib");
-        libduckdb.addObjectFile("third_party/win64/ws2_32.lib");
-        libduckdb.addObjectFile("third_party/win64/crypt32.lib");
-        libduckdb.addObjectFile("third_party/win64/cryptui.lib");
+        libduckdb.addIncludePath(std.build.LazyPath.relative("third_party/openssl/include"));
+        libduckdb.addObjectFile(std.build.LazyPath.relative("third_party/openssl/lib/libcrypto.lib"));
+        libduckdb.addObjectFile(std.build.LazyPath.relative("third_party/openssl/lib/libssl.lib"));
+        libduckdb.addObjectFile(std.build.LazyPath.relative("third_party/win64/ws2_32.lib"));
+        libduckdb.addObjectFile(std.build.LazyPath.relative("third_party/win64/crypt32.lib"));
+        libduckdb.addObjectFile(std.build.LazyPath.relative("third_party/win64/cryptui.lib"));
         libduckdb.step.dependOn(
             &b.addInstallFileWithDir(
                 .{.path = "third_party/openssl/lib/libssl-3-x64.dll"},
@@ -186,24 +189,17 @@ pub fn build(b: *std.build.Builder) !void {
             ).step
         );
     }
-
-    if (target.isLinux() or builtin.os.tag == .linux){
-        libduckdb.addIncludePath("third_party/openssl/include");
-        libduckdb.defineCMacro("BUILD_JEMALLOC_EXTENSION", "TRUE");
-        libduckdb.addIncludePath("extension/jemalloc/include");
-        libduckdb.addIncludePath("extension/jemalloc/jemalloc/include"); 
-        libduckdb.linkLibrary(jemalloc_extension); 
+    if (target.isLinux()){
+        libduckdb.addIncludePath(std.build.LazyPath.relative("third_party/openssl/include"));
         libduckdb.linkSystemLibrary("ssl");
         libduckdb.linkSystemLibrary("crypto");
     }
-
-    if (target.isDarwin() or builtin.os.tag == .macos){
-        libduckdb.addIncludePath("/opt/homebrew/opt/openssl@3/"); 
-        libduckdb.addLibraryPath("/opt/homebrew/opt/openssl@3/lib");
+    if (target.isDarwin()){
+        libduckdb.addIncludePath(std.build.LazyPath.relative("/opt/homebrew/opt/openssl@3/")); 
+        libduckdb.addLibraryPath(std.build.LazyPath.relative("/opt/homebrew/opt/openssl@3/lib"));
         libduckdb.linkSystemLibrary("ssl");
         libduckdb.linkSystemLibrary("crypto");
     }
-
     libduckdb.linkLibrary(fastpforlib);
     libduckdb.linkLibrary(fmt);
     libduckdb.linkLibrary(fsst);
@@ -216,6 +212,7 @@ pub fn build(b: *std.build.Builder) !void {
     libduckdb.linkLibrary(parquet_extension);
     libduckdb.linkLibrary(httpfs_extension);
     libduckdb.linkLibrary(icu_extension);
+    libduckdb.linkLibrary(jemalloc_extension); 
     _ = try basicSetup(b,libduckdb);
     libduckdb.linkLibC();
 }
@@ -270,7 +267,7 @@ fn basicSetup(b:*std.build.Builder, in: *std.build.LibExeObjStep)!void {
         "third_party/jaro_winkler",
     };
     for (include_dirs) |include_dir|{
-        in.addIncludePath(include_dir);
+        in.addIncludePath(std.build.LazyPath.relative(include_dir));
     }
     in.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
     in.linkLibCpp();
