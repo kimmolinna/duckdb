@@ -46,4 +46,7 @@ And then you are ready to build duckdb
 zig build -Doptimize=ReleaseFast # using build.zig
 zig build --build-file build_shell.zig -Doptimize=ReleaseFast  # define build-file 
 zig build --build-file build_shell.zig -Doptimize=ReleaseFast -Dtarget=x86_64-windows-gnu
+zig build --build-file build_libraries_win.zig -Doptimize=ReleaseFast # build libraries for Windows
+zig build --build-file build_dynamic_library_win.zig -Doptimize=ReleaseFast # build dynamic library for Windows
+zig build --build-file build_shell_win.zig -Doptimize=ReleaseFast # build shell for Windows
 ```
