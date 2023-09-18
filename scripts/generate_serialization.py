@@ -53,7 +53,7 @@ footer = '''
 '''
 
 serialize_base = '''
-void ${CLASS_NAME}::FormatSerialize(FormatSerializer &serializer) const {
+void ${CLASS_NAME}::Serialize(Serializer &serializer) const {
 ${MEMBERS}}
 '''
 
@@ -61,12 +61,12 @@ serialize_element = (
     '\tserializer.WriteProperty(${PROPERTY_ID}, "${PROPERTY_KEY}", ${PROPERTY_NAME}${PROPERTY_DEFAULT});\n'
 )
 
-base_serialize = '\t${BASE_CLASS_NAME}::FormatSerialize(serializer);\n'
+base_serialize = '\t${BASE_CLASS_NAME}::Serialize(serializer);\n'
 
 pointer_return = '${POINTER}<${CLASS_NAME}>'
 
 deserialize_base = '''
-${DESERIALIZE_RETURN} ${CLASS_NAME}::FormatDeserialize(FormatDeserializer &deserializer) {
+${DESERIALIZE_RETURN} ${CLASS_NAME}::Deserialize(Deserializer &deserializer) {
 ${MEMBERS}
 }
 '''
@@ -85,7 +85,7 @@ switch_header = '\tcase ${ENUM_TYPE}::${ENUM_VALUE}:\n'
 
 switch_statement = (
     switch_header
-    + '''\t\tresult = ${CLASS_DESERIALIZE}::FormatDeserialize(deserializer);
+    + '''\t\tresult = ${CLASS_DESERIALIZE}::Deserialize(deserializer);
 \t\tbreak;
 '''
 )
@@ -94,7 +94,14 @@ deserialize_element = '\tauto ${PROPERTY_NAME} = deserializer.ReadProperty<${PRO
 deserialize_element_class = '\tdeserializer.ReadProperty(${PROPERTY_ID}, "${PROPERTY_KEY}", result${ASSIGNMENT}${PROPERTY_NAME}${PROPERTY_DEFAULT});\n'
 deserialize_element_class_base = '\tauto ${PROPERTY_NAME} = deserializer.ReadProperty<unique_ptr<${BASE_PROPERTY}>>(${PROPERTY_ID}, "${PROPERTY_KEY}"${PROPERTY_DEFAULT});\n\tresult${ASSIGNMENT}${PROPERTY_NAME} = unique_ptr_cast<${BASE_PROPERTY}, ${DERIVED_PROPERTY}>(std::move(${PROPERTY_NAME}));\n'
 
-move_list = ['string', 'ParsedExpression*', 'CommonTableExpressionMap', 'LogicalType', 'ColumnDefinition']
+move_list = [
+    'string',
+    'ParsedExpression*',
+    'CommonTableExpressionMap',
+    'LogicalType',
+    'ColumnDefinition',
+    'BaseStatistics',
+]
 
 reference_list = ['ClientContext', 'bound_parameter_map_t']
 
@@ -508,7 +515,15 @@ def generate_class_code(class_entry):
             class_deserialize += get_deserialize_assignment(
                 entry.deserialize_property, entry.type, class_entry.pointer_type
             )
+        if entry.name in class_entry.set_parameter_names:
+            class_deserialize += set_deserialize_parameter.replace('${PROPERTY_TYPE}', entry.type).replace(
+                '${PROPERTY_NAME}', entry.name
+            )
 
+    for entry in class_entry.set_parameters:
+        class_deserialize += unset_deserialize_parameter.replace('${PROPERTY_TYPE}', entry.type).replace(
+            '${PROPERTY_NAME}', entry.name
+        )
     class_deserialize += generate_return(class_entry)
     deserialize_return = get_return_value(class_entry.pointer_type, class_entry.return_type)
 
@@ -547,11 +562,15 @@ for entry in file_list:
     source_path = entry['source']
     target_path = entry['target']
     with open(source_path, 'r') as f:
-        json_data = json.load(f)
+        try:
+            json_data = json.load(f)
+        except Exception as e:
+            print(f"Failed to parse {source_path}: {str(e)}")
+            exit(1)
 
     include_list = [
-        'duckdb/common/serializer/format_serializer.hpp',
-        'duckdb/common/serializer/format_deserializer.hpp',
+        'duckdb/common/serializer/serializer.hpp',
+        'duckdb/common/serializer/deserializer.hpp',
     ]
     base_classes = []
     classes = []

@@ -17,8 +17,11 @@
 #include "duckdb_python/pyresult.hpp"
 #include "duckdb/parser/statement/explain_statement.hpp"
 #include "duckdb_python/pybind11/conversions/explain_enum.hpp"
+#include "duckdb_python/pybind11/conversions/render_mode_enum.hpp"
 #include "duckdb_python/pybind11/conversions/null_handling_enum.hpp"
 #include "duckdb_python/pybind11/dataframe.hpp"
+#include "duckdb_python/python_objects.hpp"
+#include "duckdb/common/box_renderer.hpp"
 
 namespace duckdb {
 
@@ -67,11 +70,13 @@ public:
 
 	unique_ptr<DuckDBPyRelation> ProjectFromExpression(const string &expr);
 	unique_ptr<DuckDBPyRelation> ProjectFromTypes(const py::object &types);
-	unique_ptr<DuckDBPyRelation> Project(const string &expr);
+	unique_ptr<DuckDBPyRelation> Project(const py::args &args);
 
-	unique_ptr<DuckDBPyRelation> Filter(const string &expr);
+	unique_ptr<DuckDBPyRelation> Filter(const py::object &expr);
+	unique_ptr<DuckDBPyRelation> FilterFromExpression(const string &expr);
 	unique_ptr<DuckDBPyRelation> Limit(int64_t n, int64_t offset = 0);
 	unique_ptr<DuckDBPyRelation> Order(const string &expr);
+	unique_ptr<DuckDBPyRelation> Sort(const py::args &args);
 
 	unique_ptr<DuckDBPyRelation> Aggregate(const string &expr, const string &groups = "");
 
@@ -247,7 +252,9 @@ public:
 	py::list ColumnTypes();
 
 	string ToString();
-	void Print();
+	void Print(const Optional<py::int_> &max_width, const Optional<py::int_> &max_rows,
+	           const Optional<py::int_> &max_col_width, const Optional<py::str> &null_value,
+	           const py::object &render_mode);
 
 	string Explain(ExplainType type);
 
@@ -256,6 +263,7 @@ public:
 	Relation &GetRel();
 
 private:
+	string ToStringInternal(const BoxRendererConfig &config, bool invalidate_cache = false);
 	string GenerateExpressionList(const string &function_name, const string &aggregated_columns,
 	                              const string &groups = "", const string &function_parameter = "",
 	                              const bool &ignore_nulls = false, const string &projected_columns = "",
