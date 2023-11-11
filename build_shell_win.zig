@@ -65,11 +65,12 @@ pub fn build(b: *std.build.Builder) !void {
         .target = target,
         .optimize = optimize,
     });
-    sqlite_api.addCSourceFiles(
-        (try iterateFiles(b, "tools/sqlite3_api_wrapper")).items, &.{});
+    sqlite_api.addCSourceFiles(.{
+        .files = (try iterateFiles(b, "tools/sqlite3_api_wrapper")).items,
+    });
     sqlite_api.addIncludePath(std.build.LazyPath.relative("tools/sqlite3_api_wrapper/sqlite3"));
     sqlite_api.addCSourceFile(.{
-            .file = std.build.LazyPath.relative("tools/sqlite3_api_wrapper/sqlite3/os_win.c"), 
+            .file = .{.path = "tools/sqlite3_api_wrapper/sqlite3/os_win.c"}, 
             .flags = &.{"-Wno-error=implicit-function-declaration"}
             });    
     sqlite_api.addIncludePath(std.build.LazyPath.relative("extension"));
