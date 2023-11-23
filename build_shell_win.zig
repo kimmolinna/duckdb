@@ -9,29 +9,29 @@ pub fn build(b: *std.build.Builder) !void {
     // Standard release options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const optimize = b.standardOptimizeOption(.{});
-    var child = std.ChildProcess.init(&[_][]const u8{"python3.11", "scripts/generate_version_hpp.py"},std.heap.page_allocator);
+    var child = std.ChildProcess.init(&[_][]const u8{ "python3.11", "scripts/generate_version_hpp.py" }, std.heap.page_allocator);
     try child.spawn();
     _ = try child.wait();
     const duckdb = b.addStaticLibrary(.{
         .name = "duckdb",
         .target = target,
         .optimize = optimize,
-    });  
+    });
     duckdb.addIncludePath(std.build.LazyPath.relative("extension/httpfs/include"));
     duckdb.addIncludePath(std.build.LazyPath.relative("extension/icu/include"));
     duckdb.addIncludePath(std.build.LazyPath.relative("extension/icu/third_party/icu/common"));
     duckdb.addIncludePath(std.build.LazyPath.relative("extension/icu/third_party/icu/i18n"));
     duckdb.addIncludePath(std.build.LazyPath.relative("extension/parquet/include"));
-    duckdb.addIncludePath(std.build.LazyPath.relative("third_party/httplib")); 
+    duckdb.addIncludePath(std.build.LazyPath.relative("third_party/httplib"));
     duckdb.addIncludePath(std.build.LazyPath.relative("third_party/libpg_query/include"));
     duckdb.addIncludePath(std.build.LazyPath.relative("src/duckdb/execution/index/art/"));
     duckdb.defineCMacro("BUILD_HTTPFS_EXTENSION", "TRUE");
     duckdb.defineCMacro("BUILD_ICU_EXTENSION", "TRUE");
     duckdb.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
-    duckdb.defineCMacro("DUCKDB_MAIN_LIBRARY",null);
-    duckdb.defineCMacro("DUCKDB_USE_STANDARD_ASSERT",null);
-    duckdb.defineCMacro("DUCKDB",null);
-    duckdb.defineCMacro("SQLITE_OMIT_LOAD_EXTENSION","1");
+    duckdb.defineCMacro("DUCKDB_MAIN_LIBRARY", null);
+    duckdb.defineCMacro("DUCKDB_USE_STANDARD_ASSERT", null);
+    duckdb.defineCMacro("DUCKDB", null);
+    duckdb.defineCMacro("SQLITE_OMIT_LOAD_EXTENSION", "1");
     duckdb.addLibraryPath(std.build.LazyPath.relative("zig-out/lib"));
     duckdb.linkSystemLibrary("catalog");
     duckdb.linkSystemLibrary("common");
@@ -46,20 +46,21 @@ pub fn build(b: *std.build.Builder) !void {
     duckdb.linkSystemLibrary("icu_extension");
     duckdb.linkSystemLibrary("main");
     duckdb.linkSystemLibrary("mbedtls");
-    duckdb.linkSystemLibrary("miniz");    
+    duckdb.linkSystemLibrary("miniz");
     duckdb.linkSystemLibrary("optimizer");
     duckdb.linkSystemLibrary("parallel");
     duckdb.linkSystemLibrary("parquet_extension");
     duckdb.linkSystemLibrary("parser");
-    duckdb.linkSystemLibrary("pg_query");    
+    duckdb.linkSystemLibrary("pg_query");
     duckdb.linkSystemLibrary("planner");
     duckdb.linkSystemLibrary("re2");
+    duckdb.linkSystemLibrary("skiplistlib");
     duckdb.linkSystemLibrary("storage");
     duckdb.linkSystemLibrary("transaction");
     duckdb.linkSystemLibrary("utf8proc");
     duckdb.linkSystemLibrary("verification");
     duckdb.linkLibC();
-    _ = try basicSetup(b,duckdb);
+    _ = try basicSetup(b, duckdb);
     const sqlite_api = b.addStaticLibrary(.{
         .name = "sqlite_api",
         .target = target,
@@ -69,10 +70,7 @@ pub fn build(b: *std.build.Builder) !void {
         .files = (try iterateFiles(b, "tools/sqlite3_api_wrapper")).items,
     });
     sqlite_api.addIncludePath(std.build.LazyPath.relative("tools/sqlite3_api_wrapper/sqlite3"));
-    sqlite_api.addCSourceFile(.{
-            .file = .{.path = "tools/sqlite3_api_wrapper/sqlite3/os_win.c"}, 
-            .flags = &.{"-Wno-error=implicit-function-declaration"}
-            });    
+    sqlite_api.addCSourceFile(.{ .file = .{ .path = "tools/sqlite3_api_wrapper/sqlite3/os_win.c" }, .flags = &.{"-Wno-error=implicit-function-declaration"} });
     sqlite_api.addIncludePath(std.build.LazyPath.relative("extension"));
     sqlite_api.addIncludePath(std.build.LazyPath.relative("extension/httpfs/include"));
     sqlite_api.addIncludePath(std.build.LazyPath.relative("extension/icu/include"));
@@ -93,24 +91,21 @@ pub fn build(b: *std.build.Builder) !void {
     sqlite_api.linkSystemLibrary("utf8proc");
     sqlite_api.linkLibrary(duckdb);
     sqlite_api.linkLibC();
-    _ = try basicSetup(b,sqlite_api);
-// shell aka DuckDBClient    
+    _ = try basicSetup(b, sqlite_api);
+    // shell aka DuckDBClient
     const shell = b.addExecutable(.{
         .name = "duckdb",
         .target = target,
         .optimize = optimize,
     });
-    shell.addCSourceFile(.{
-            .file = std.build.LazyPath.relative("tools/shell/shell.c"), 
-            .flags = &.{}
-            });
+    shell.addCSourceFile(.{ .file = std.build.LazyPath.relative("tools/shell/shell.c"), .flags = &.{} });
     shell.addIncludePath(std.build.LazyPath.relative("extension/httpfs/include"));
     shell.addIncludePath(std.build.LazyPath.relative("extension/icu/include"));
     shell.addIncludePath(std.build.LazyPath.relative("extension/parquet/include"));
     shell.addIncludePath(std.build.LazyPath.relative("third_party/libpg_query/include"));
     shell.addIncludePath(std.build.LazyPath.relative("tools/shell/include"));
     shell.addIncludePath(std.build.LazyPath.relative("tools/sqlite3_api_wrapper/include"));
-    shell.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
+    shell.defineCMacro("DUCKDB_BUILD_LIBRARY", null);
     shell.defineCMacro("SQLITE_OMIT_LOAD_EXTENSION", "1");
     shell.addIncludePath(std.build.LazyPath.relative("third_party/openssl/include"));
     shell.addObjectFile(std.build.LazyPath.relative("third_party/openssl/lib/libcrypto.lib"));
@@ -118,20 +113,16 @@ pub fn build(b: *std.build.Builder) !void {
     shell.addObjectFile(std.build.LazyPath.relative("third_party/win64/ws2_32.lib"));
     shell.addObjectFile(std.build.LazyPath.relative("third_party/win64/crypt32.lib"));
     shell.addObjectFile(std.build.LazyPath.relative("third_party/win64/cryptui.lib"));
-    shell.step.dependOn(
-        &b.addInstallFileWithDir(
-            .{.path = "third_party/openssl/lib/libssl-3-x64.dll"},
-            .bin,
-            "libssl-3-x64.dll",
-        ).step
-    );
-    shell.step.dependOn(
-        &b.addInstallFileWithDir(
-            .{.path = "third_party/openssl/lib/libcrypto-3-x64.dll"},
-            .bin,
-            "libcrypto-3-x64.dll",
-        ).step
-    );
+    shell.step.dependOn(&b.addInstallFileWithDir(
+        .{ .path = "third_party/openssl/lib/libssl-3-x64.dll" },
+        .bin,
+        "libssl-3-x64.dll",
+    ).step);
+    shell.step.dependOn(&b.addInstallFileWithDir(
+        .{ .path = "third_party/openssl/lib/libcrypto-3-x64.dll" },
+        .bin,
+        "libcrypto-3-x64.dll",
+    ).step);
     shell.addLibraryPath(std.build.LazyPath.relative("zig-out/lib"));
     shell.linkSystemLibrary("duckdb");
     shell.linkSystemLibrary("utf8proc");
@@ -140,9 +131,10 @@ pub fn build(b: *std.build.Builder) !void {
     shell.linkSystemLibrary("fsst");
     shell.linkSystemLibrary("hyperloglog");
     shell.linkSystemLibrary("mbedtls");
-    shell.linkSystemLibrary("miniz");    
-    shell.linkSystemLibrary("pg_query");    
+    shell.linkSystemLibrary("miniz");
+    shell.linkSystemLibrary("pg_query");
     shell.linkSystemLibrary("re2");
+    shell.linkSystemLibrary("skiplistlib");
     shell.linkSystemLibrary("utf8proc");
     shell.linkSystemLibrary("parquet_extension");
     shell.linkSystemLibrary("httpfs_extension");
@@ -150,40 +142,38 @@ pub fn build(b: *std.build.Builder) !void {
     shell.linkLibrary(sqlite_api);
     shell.linkLibrary(duckdb);
     shell.linkLibC();
-    shell.want_lto = false; 
-    _ = try basicSetup(b,shell);
+    shell.want_lto = false;
+    _ = try basicSetup(b, shell);
 }
-fn iterateFiles(b: *std.build.Builder, path: []const u8)!std.ArrayList([]const u8){
+fn iterateFiles(b: *std.build.Builder, path: []const u8) !std.ArrayList([]const u8) {
     var files = std.ArrayList([]const u8).init(b.allocator);
-    var dir = try std.fs.cwd().openIterableDir(path, .{ });
+    var dir = try std.fs.cwd().openIterableDir(path, .{});
     var walker = try dir.walk(b.allocator);
     defer walker.deinit();
-    var out: [256] u8 = undefined;
-    const exclude_files:[]const[]const u8 = &.{
-        "grammar.cpp","symbols.cpp","os_win.c","linenoise.cpp","parquetcli.cpp",
-        "utf8proc_data.cpp","test_sqlite3_api_wrapper.cpp"};
-    const allowed_exts: []const[]const u8 =  &.{".c", ".cpp", ".cxx", ".c++", ".cc"};
+    var out: [256]u8 = undefined;
+    const exclude_files: []const []const u8 = &.{ "grammar.cpp", "symbols.cpp", "os_win.c", "linenoise.cpp", "parquetcli.cpp", "utf8proc_data.cpp", "test_sqlite3_api_wrapper.cpp" };
+    const allowed_exts: []const []const u8 = &.{ ".c", ".cpp", ".cxx", ".c++", ".cc" };
     while (try walker.next()) |entry| {
         const ext = std.fs.path.extension(entry.basename);
         const include_file = for (allowed_exts) |e| {
             if (std.mem.eql(u8, ext, e))
                 break true;
-            } else false;
+        } else false;
         if (include_file) {
             const exclude_file = for (exclude_files) |e| {
                 if (std.mem.eql(u8, entry.basename, e))
                     break true;
-                } else false;
-            if (!exclude_file){
-                const file = try std.fmt.bufPrint(&out, ("{s}/{s}"), .{path,entry.path}); 
+            } else false;
+            if (!exclude_file) {
+                const file = try std.fmt.bufPrint(&out, ("{s}/{s}"), .{ path, entry.path });
                 try files.append(b.dupe(file));
             }
-        }  
+        }
     }
     return files;
 }
-fn basicSetup(b: *std.build.Builder,in: *std.build.LibExeObjStep)!void {
-    const include_dirs= [_][]const u8{
+fn basicSetup(b: *std.build.Builder, in: *std.build.LibExeObjStep) !void {
+    const include_dirs = [_][]const u8{
         "src/include",
         "third_party/concurrentqueue",
         "third_party/fast_float",
@@ -196,15 +186,16 @@ fn basicSetup(b: *std.build.Builder,in: *std.build.LibExeObjStep)!void {
         "third_party/miniz",
         "third_party/pcg",
         "third_party/re2",
+        "third_party/skiplist",
         "third_party/tdigest",
         "third_party/utf8proc/include",
         "third_party/mbedtls/include",
         "third_party/jaro_winkler",
     };
-    for (include_dirs) |include_dir|{
+    for (include_dirs) |include_dir| {
         in.addIncludePath(std.build.LazyPath.relative(include_dir));
     }
-    in.defineCMacro("DUCKDB_BUILD_LIBRARY",null);
+    in.defineCMacro("DUCKDB_BUILD_LIBRARY", null);
     in.linkLibCpp();
     in.force_pic = true;
     in.strip = true;
