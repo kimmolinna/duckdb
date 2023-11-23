@@ -208,6 +208,8 @@ enum class PreparedParamType : uint8_t;
 
 enum class ProfilerPrintFormat : uint8_t;
 
+enum class QuantileSerializationType : uint8_t;
+
 enum class QueryNodeType : uint8_t;
 
 enum class QueryResultType : uint8_t;
@@ -291,6 +293,10 @@ enum class WALType : uint8_t;
 enum class WindowAggregationMode : uint32_t;
 
 enum class WindowBoundary : uint8_t;
+
+enum class WindowExcludeMode : uint8_t;
+
+enum class WithinCollection : uint8_t;
 
 
 template<>
@@ -558,6 +564,9 @@ template<>
 const char* EnumUtil::ToChars<ProfilerPrintFormat>(ProfilerPrintFormat value);
 
 template<>
+const char* EnumUtil::ToChars<QuantileSerializationType>(QuantileSerializationType value);
+
+template<>
 const char* EnumUtil::ToChars<QueryNodeType>(QueryNodeType value);
 
 template<>
@@ -682,6 +691,12 @@ const char* EnumUtil::ToChars<WindowAggregationMode>(WindowAggregationMode value
 
 template<>
 const char* EnumUtil::ToChars<WindowBoundary>(WindowBoundary value);
+
+template<>
+const char* EnumUtil::ToChars<WindowExcludeMode>(WindowExcludeMode value);
+
+template<>
+const char* EnumUtil::ToChars<WithinCollection>(WithinCollection value);
 
 
 template<>
@@ -949,6 +964,9 @@ template<>
 ProfilerPrintFormat EnumUtil::FromString<ProfilerPrintFormat>(const char *value);
 
 template<>
+QuantileSerializationType EnumUtil::FromString<QuantileSerializationType>(const char *value);
+
+template<>
 QueryNodeType EnumUtil::FromString<QueryNodeType>(const char *value);
 
 template<>
@@ -1073,6 +1091,12 @@ WindowAggregationMode EnumUtil::FromString<WindowAggregationMode>(const char *va
 
 template<>
 WindowBoundary EnumUtil::FromString<WindowBoundary>(const char *value);
+
+template<>
+WindowExcludeMode EnumUtil::FromString<WindowExcludeMode>(const char *value);
+
+template<>
+WithinCollection EnumUtil::FromString<WithinCollection>(const char *value);
 
 
 }
