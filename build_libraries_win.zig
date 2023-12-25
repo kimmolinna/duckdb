@@ -278,7 +278,8 @@ pub fn build(b: *std.build.Builder) !void {
 }
 fn iterateFiles(b: *std.build.Builder, path: []const u8) !std.ArrayList([]const u8) {
     var files = std.ArrayList([]const u8).init(b.allocator);
-    var dir = try std.fs.cwd().openIterableDir(path, .{});
+    var dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
+    defer dir.close();
     var walker = try dir.walk(b.allocator);
     defer walker.deinit();
     var out: [256]u8 = undefined;
@@ -328,6 +329,7 @@ fn basicSetup(b: *std.build.Builder, in: *std.build.LibExeObjStep) !void {
         in.addIncludePath(std.build.LazyPath.relative(include_dir));
     }
     in.defineCMacro("DUCKDB_BUILD_LIBRARY", null);
+    in.linkLibC();
     in.linkLibCpp();
     in.force_pic = true;
     in.strip = true;
