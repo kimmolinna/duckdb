@@ -33,22 +33,6 @@ pub fn build(b: *std.build.Builder) !void {
     duckdb.defineCMacro("DUCKDB_USE_STANDARD_ASSERT", null);
     duckdb.defineCMacro("DUCKDB", null);
     duckdb.defineCMacro("SQLITE_OMIT_LOAD_EXTENSION", "1");
-    duckdb.addIncludePath(std.build.LazyPath.relative("third_party/openssl/include"));
-    duckdb.addObjectFile(std.build.LazyPath.relative("third_party/openssl/lib/libcrypto.lib"));
-    duckdb.addObjectFile(std.build.LazyPath.relative("third_party/openssl/lib/libssl.lib"));
-    duckdb.addObjectFile(std.build.LazyPath.relative("third_party/win64/ws2_32.lib"));
-    duckdb.addObjectFile(std.build.LazyPath.relative("third_party/win64/crypt32.lib"));
-    duckdb.addObjectFile(std.build.LazyPath.relative("third_party/win64/cryptui.lib"));
-    duckdb.step.dependOn(&b.addInstallFileWithDir(
-        .{ .path = "third_party/openssl/lib/libssl-3-x64.dll" },
-        .bin,
-        "libssl-3-x64.dll",
-    ).step);
-    duckdb.step.dependOn(&b.addInstallFileWithDir(
-        .{ .path = "third_party/openssl/lib/libcrypto-3-x64.dll" },
-        .bin,
-        "libcrypto-3-x64.dll",
-    ).step);
     duckdb.addLibraryPath(std.build.LazyPath.relative("zig-out/lib"));
     duckdb.linkSystemLibrary("catalog");
     duckdb.linkSystemLibrary("common");
@@ -77,7 +61,6 @@ pub fn build(b: *std.build.Builder) !void {
     duckdb.linkSystemLibrary("utf8proc");
     duckdb.linkSystemLibrary("verification");
     duckdb.linkLibC();
-    duckdb.linkLibCpp();
     _ = try basicSetup(b, duckdb);
     const sqlite_api = b.addStaticLibrary(.{
         .name = "sqlite_api",
@@ -134,6 +117,7 @@ pub fn build(b: *std.build.Builder) !void {
     shell.addObjectFile(std.build.LazyPath.relative("third_party/win64/ws2_32.lib"));
     shell.addObjectFile(std.build.LazyPath.relative("third_party/win64/crypt32.lib"));
     shell.addObjectFile(std.build.LazyPath.relative("third_party/win64/cryptui.lib"));
+    shell.addObjectFile(std.build.LazyPath.relative("third_party/win64/rstrtmgr.lib"));
     shell.step.dependOn(&b.addInstallFileWithDir(
         .{ .path = "third_party/openssl/lib/libssl-3-x64.dll" },
         .bin,
@@ -218,7 +202,6 @@ fn basicSetup(b: *std.build.Builder, in: *std.build.LibExeObjStep) !void {
         in.addIncludePath(std.build.LazyPath.relative(include_dir));
     }
     in.defineCMacro("DUCKDB_BUILD_LIBRARY", null);
-    in.linkLibC();
     in.linkLibCpp();
     in.force_pic = true;
     in.strip = true;
