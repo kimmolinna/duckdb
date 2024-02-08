@@ -1,6 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
-pub fn build(b: *std.build.Builder) !void {
+pub fn build(b: *std.Build) !void {
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
     // means any target is allowed, and the default is native. Other options
@@ -15,26 +15,26 @@ pub fn build(b: *std.build.Builder) !void {
         .target = target,
         .optimize = optimize,
     });
-    libduckdb.addIncludePath(std.build.LazyPath.relative("extension/httpfs/include"));
-    libduckdb.addIncludePath(std.build.LazyPath.relative("extension/icu/include"));
-    libduckdb.addIncludePath(std.build.LazyPath.relative("extension/icu/third_party/icu/common"));
-    libduckdb.addIncludePath(std.build.LazyPath.relative("extension/icu/third_party/icu/i18n"));
-    libduckdb.addIncludePath(std.build.LazyPath.relative("extension/parquet/include"));
-    libduckdb.addIncludePath(std.build.LazyPath.relative("third_party/httplib"));
-    libduckdb.addIncludePath(std.build.LazyPath.relative("third_party/libpg_query/include"));
-    libduckdb.addIncludePath(std.build.LazyPath.relative("third_party/openssl/include"));
+    libduckdb.addIncludePath(std.Build.LazyPath.relative("extension/httpfs/include"));
+    libduckdb.addIncludePath(std.Build.LazyPath.relative("extension/icu/include"));
+    libduckdb.addIncludePath(std.Build.LazyPath.relative("extension/icu/third_party/icu/common"));
+    libduckdb.addIncludePath(std.Build.LazyPath.relative("extension/icu/third_party/icu/i18n"));
+    libduckdb.addIncludePath(std.Build.LazyPath.relative("extension/parquet/include"));
+    libduckdb.addIncludePath(std.Build.LazyPath.relative("third_party/httplib"));
+    libduckdb.addIncludePath(std.Build.LazyPath.relative("third_party/libpg_query/include"));
+    libduckdb.addIncludePath(std.Build.LazyPath.relative("third_party/openssl/include"));
     libduckdb.defineCMacro("BUILD_HTTPFS_EXTENSION", "TRUE");
     libduckdb.defineCMacro("BUILD_ICU_EXTENSION", "TRUE");
     libduckdb.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
     libduckdb.defineCMacro("duckdb_EXPORTS", null);
     libduckdb.defineCMacro("DUCKDB_MAIN_LIBRARY", null);
     libduckdb.defineCMacro("DUCKDB", null);
-    libduckdb.addIncludePath(std.build.LazyPath.relative("third_party/openssl/include"));
-    libduckdb.addObjectFile(std.build.LazyPath.relative("third_party/openssl/lib/libcrypto.lib"));
-    libduckdb.addObjectFile(std.build.LazyPath.relative("third_party/openssl/lib/libssl.lib"));
-    libduckdb.addObjectFile(std.build.LazyPath.relative("third_party/win64/ws2_32.lib"));
-    libduckdb.addObjectFile(std.build.LazyPath.relative("third_party/win64/crypt32.lib"));
-    libduckdb.addObjectFile(std.build.LazyPath.relative("third_party/win64/cryptui.lib"));
+    libduckdb.addIncludePath(std.Build.LazyPath.relative("third_party/openssl/include"));
+    libduckdb.addObjectFile(std.Build.LazyPath.relative("third_party/openssl/lib/libcrypto.lib"));
+    libduckdb.addObjectFile(std.Build.LazyPath.relative("third_party/openssl/lib/libssl.lib"));
+    libduckdb.addObjectFile(std.Build.LazyPath.relative("third_party/win64/ws2_32.lib"));
+    libduckdb.addObjectFile(std.Build.LazyPath.relative("third_party/win64/crypt32.lib"));
+    libduckdb.addObjectFile(std.Build.LazyPath.relative("third_party/win64/cryptui.lib"));
     libduckdb.step.dependOn(&b.addInstallFileWithDir(
         .{ .path = "third_party/openssl/lib/libssl-3-x64.dll" },
         .bin,
@@ -45,7 +45,7 @@ pub fn build(b: *std.build.Builder) !void {
         .bin,
         "libcrypto-3-x64.dll",
     ).step);
-    libduckdb.addLibraryPath(std.build.LazyPath.relative("zig-out/lib"));
+    libduckdb.addLibraryPath(std.Build.LazyPath.relative("zig-out/lib"));
     libduckdb.linkSystemLibrary("catalog");
     libduckdb.linkSystemLibrary("common");
     libduckdb.linkSystemLibrary("core_funtions");
@@ -75,7 +75,7 @@ pub fn build(b: *std.build.Builder) !void {
     libduckdb.linkLibC();
     _ = try basicSetup(b, libduckdb);
 }
-fn basicSetup(b: *std.build.Builder, in: *std.build.LibExeObjStep) !void {
+fn basicSetup(b: *std.Build, in: *std.Build.Step.Compile) !void {
     const include_dirs = [_][]const u8{
         "src/include",
         "third_party/concurrentqueue",
@@ -97,12 +97,12 @@ fn basicSetup(b: *std.build.Builder, in: *std.build.LibExeObjStep) !void {
         "third_party/utf8proc/include",
     };
     for (include_dirs) |include_dir| {
-        in.addIncludePath(std.build.LazyPath.relative(include_dir));
+        in.addIncludePath(std.Build.LazyPath.relative(include_dir));
     }
     in.defineCMacro("DUCKDB_BUILD_LIBRARY", null);
     in.linkLibC();
     in.linkLibCpp();
-    in.force_pic = true;
-    in.strip = true;
+    in.root_module.pic = true;
+    in.root_module.strip = true;
     b.installArtifact(in);
 }

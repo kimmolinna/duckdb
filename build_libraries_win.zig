@@ -1,7 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
-pub fn build(b: *std.build.Builder) !void {
+pub fn build(b: *std.Build) !void {
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
     // means any target is allowed, and the default is native. Other options
@@ -77,7 +77,7 @@ pub fn build(b: *std.build.Builder) !void {
     pg_query.addCSourceFiles(.{
         .files = (try iterateFiles(b, "third_party/libpg_query")).items,
     });
-    pg_query.addIncludePath(std.build.LazyPath.relative("third_party/libpg_query/include"));
+    pg_query.addIncludePath(std.Build.LazyPath.relative("third_party/libpg_query/include"));
     _ = try basicSetup(b, pg_query);
     const re2 = b.addStaticLibrary(.{
         .name = "re2",
@@ -114,10 +114,10 @@ pub fn build(b: *std.build.Builder) !void {
     httpfs_extension.addCSourceFiles(.{
         .files = (try iterateFiles(b, "extension/httpfs")).items,
     });
-    httpfs_extension.addIncludePath(std.build.LazyPath.relative("extension/httpfs/include"));
-    httpfs_extension.addIncludePath(std.build.LazyPath.relative("third_party/httplib"));
-    httpfs_extension.addIncludePath(std.build.LazyPath.relative("third_party/openssl/include"));
-    httpfs_extension.addIncludePath(std.build.LazyPath.relative("third_party/picohash"));
+    httpfs_extension.addIncludePath(std.Build.LazyPath.relative("extension/httpfs/include"));
+    httpfs_extension.addIncludePath(std.Build.LazyPath.relative("third_party/httplib"));
+    httpfs_extension.addIncludePath(std.Build.LazyPath.relative("third_party/openssl/include"));
+    httpfs_extension.addIncludePath(std.Build.LazyPath.relative("third_party/picohash"));
     _ = try basicSetup(b, httpfs_extension);
     const icu_extension = b.addStaticLibrary(.{
         .name = "icu_extension",
@@ -127,9 +127,9 @@ pub fn build(b: *std.build.Builder) !void {
     icu_extension.addCSourceFiles(.{
         .files = (try iterateFiles(b, "extension/icu")).items,
     });
-    icu_extension.addIncludePath(std.build.LazyPath.relative("extension/icu/include"));
-    icu_extension.addIncludePath(std.build.LazyPath.relative("extension/icu/third_party/icu/common"));
-    icu_extension.addIncludePath(std.build.LazyPath.relative("extension/icu/third_party/icu/i18n"));
+    icu_extension.addIncludePath(std.Build.LazyPath.relative("extension/icu/include"));
+    icu_extension.addIncludePath(std.Build.LazyPath.relative("extension/icu/third_party/icu/common"));
+    icu_extension.addIncludePath(std.Build.LazyPath.relative("extension/icu/third_party/icu/i18n"));
     _ = try basicSetup(b, icu_extension);
 
     const parquet_extension = b.addStaticLibrary(.{
@@ -152,11 +152,11 @@ pub fn build(b: *std.build.Builder) !void {
     parquet_extension.addCSourceFiles(.{
         .files = (try iterateFiles(b, "third_party/zstd")).items,
     });
-    parquet_extension.addIncludePath(std.build.LazyPath.relative("extension/parquet/include"));
-    parquet_extension.addIncludePath(std.build.LazyPath.relative("third_party/parquet"));
-    parquet_extension.addIncludePath(std.build.LazyPath.relative("third_party/snappy"));
-    parquet_extension.addIncludePath(std.build.LazyPath.relative("third_party/thrift"));
-    parquet_extension.addIncludePath(std.build.LazyPath.relative("third_party/zstd/include"));
+    parquet_extension.addIncludePath(std.Build.LazyPath.relative("extension/parquet/include"));
+    parquet_extension.addIncludePath(std.Build.LazyPath.relative("third_party/parquet"));
+    parquet_extension.addIncludePath(std.Build.LazyPath.relative("third_party/snappy"));
+    parquet_extension.addIncludePath(std.Build.LazyPath.relative("third_party/thrift"));
+    parquet_extension.addIncludePath(std.Build.LazyPath.relative("third_party/zstd/include"));
     _ = try basicSetup(b, parquet_extension);
     const catalog = b.addStaticLibrary(.{
         .name = "catalog",
@@ -276,7 +276,7 @@ pub fn build(b: *std.build.Builder) !void {
     });
     _ = try basicSetup(b, verification);
 }
-fn iterateFiles(b: *std.build.Builder, path: []const u8) !std.ArrayList([]const u8) {
+fn iterateFiles(b: *std.Build, path: []const u8) !std.ArrayList([]const u8) {
     var files = std.ArrayList([]const u8).init(b.allocator);
     var dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
     defer dir.close();
@@ -304,7 +304,7 @@ fn iterateFiles(b: *std.build.Builder, path: []const u8) !std.ArrayList([]const 
     }
     return files;
 }
-fn basicSetup(b: *std.build.Builder, in: *std.build.LibExeObjStep) !void {
+fn basicSetup(b: *std.Build, in: *std.Build.Step.Compile) !void {
     const include_dirs = [_][]const u8{
         "src/include",
         "third_party/concurrentqueue",
@@ -326,12 +326,12 @@ fn basicSetup(b: *std.build.Builder, in: *std.build.LibExeObjStep) !void {
         "third_party/utf8proc/include",
     };
     for (include_dirs) |include_dir| {
-        in.addIncludePath(std.build.LazyPath.relative(include_dir));
+        in.addIncludePath(std.Build.LazyPath.relative(include_dir));
     }
     in.defineCMacro("DUCKDB_BUILD_LIBRARY", null);
     in.linkLibC();
     in.linkLibCpp();
-    in.force_pic = true;
-    in.strip = true;
+    in.root_module.pic = true;
+    in.root_module.strip = true;
     b.installArtifact(in);
 }
