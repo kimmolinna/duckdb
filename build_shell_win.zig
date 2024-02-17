@@ -13,7 +13,7 @@ pub fn build(b: *std.Build) !void {
     try child.spawn();
     _ = try child.wait();
     const duckdb = b.addStaticLibrary(.{
-        .name = "duckdb",
+        .name = "duckdb_static",
         .target = target,
         .optimize = optimize,
     });
@@ -67,9 +67,10 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
-    sqlite_api.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "tools/sqlite3_api_wrapper")).items,
-    });
+    // sqlite_api.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "tools/sqlite3_api_wrapper")).items
+    // });
+    sqlite_api.addCSourceFiles((try iterateFiles(b, "tools/sqlite3_api_wrapper")).items, &.{});
     sqlite_api.addIncludePath(std.Build.LazyPath.relative("tools/sqlite3_api_wrapper/sqlite3"));
     sqlite_api.addCSourceFile(.{ .file = .{ .path = "tools/sqlite3_api_wrapper/sqlite3/os_win.c" }, .flags = &.{"-Wno-error=implicit-function-declaration"} });
     sqlite_api.addIncludePath(std.Build.LazyPath.relative("extension"));
@@ -152,7 +153,8 @@ pub fn build(b: *std.Build) !void {
 }
 fn iterateFiles(b: *std.Build, path: []const u8) !std.ArrayList([]const u8) {
     var files = std.ArrayList([]const u8).init(b.allocator);
-    var dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
+//    var dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
+    var dir = try std.fs.cwd().openIterableDir(path, .{});
     var walker = try dir.walk(b.allocator);
     defer walker.deinit();
     var out: [256]u8 = undefined;
@@ -203,7 +205,9 @@ fn basicSetup(b: *std.Build, in: *std.Build.Step.Compile) !void {
     }
     in.defineCMacro("DUCKDB_BUILD_LIBRARY", null);
     in.linkLibCpp();
-    in.root_module.pic = true;
-    in.root_module.strip = true;
+    // in.root_module.pic = true;
+    // in.root_module.strip = true;
+    in.force_pic = true;
+    in.strip = true;
     b.installArtifact(in);
 }

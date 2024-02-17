@@ -20,63 +20,72 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
-    fastpforlib.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "third_party/fastpforlib")).items,
-    });
+    // fastpforlib.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "third_party/fastpforlib")).items,
+    // });
+    fastpforlib.addCSourceFiles((try iterateFiles(b, "third_party/fastpforlib")).items, &.{});
+
     _ = try basicSetup(b, fastpforlib);
     const fmt = b.addStaticLibrary(.{
         .name = "fmt",
         .target = target,
         .optimize = optimize,
     });
-    fmt.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "third_party/fmt")).items,
-    });
+    // fmt.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "third_party/fmt")).items,
+    // });
+    fmt.addCSourceFiles((try iterateFiles(b, "third_party/fmt")).items, &.{});
+
     _ = try basicSetup(b, fmt);
     const fsst = b.addStaticLibrary(.{
         .name = "fsst",
         .target = target,
         .optimize = optimize,
     });
-    fsst.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "third_party/fsst")).items,
-    });
+    // fsst.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "third_party/fsst")).items,
+    // });
+    fsst.addCSourceFiles((try iterateFiles(b, "third_party/fsst")).items, &.{});
     _ = try basicSetup(b, fsst);
     const hyperloglog = b.addStaticLibrary(.{
         .name = "hyperloglog",
         .target = target,
         .optimize = optimize,
     });
-    hyperloglog.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "third_party/hyperloglog")).items,
-    });
+    // hyperloglog.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "third_party/hyperloglog")).items,
+    // });
+    hyperloglog.addCSourceFiles((try iterateFiles(b, "third_party/hyperloglog")).items, &.{});
     _ = try basicSetup(b, hyperloglog);
     const mbedtls = b.addStaticLibrary(.{
         .name = "mbedtls",
         .target = target,
         .optimize = optimize,
     });
-    mbedtls.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "third_party/mbedtls")).items,
-    });
+    // mbedtls.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "third_party/mbedtls")).items,
+    // });
+    mbedtls.addCSourceFiles((try iterateFiles(b, "third_party/mbedtls")).items, &.{});
     _ = try basicSetup(b, mbedtls);
     const miniz = b.addStaticLibrary(.{
         .name = "miniz",
         .target = target,
         .optimize = optimize,
     });
-    miniz.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "third_party/miniz")).items,
-    });
+    // miniz.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "third_party/miniz")).items,
+    // });
+    miniz.addCSourceFiles((try iterateFiles(b, "third_party/miniz")).items, &.{});
     _ = try basicSetup(b, miniz);
     const pg_query = b.addStaticLibrary(.{
         .name = "pg_query",
         .target = target,
         .optimize = optimize,
     });
-    pg_query.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "third_party/libpg_query")).items,
-    });
+    // pg_query.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "third_party/libpg_query")).items,
+    // });
+    pg_query.addCSourceFiles((try iterateFiles(b, "third_party/libpg_query")).items, &.{});
     pg_query.addIncludePath(std.Build.LazyPath.relative("third_party/libpg_query/include"));
     _ = try basicSetup(b, pg_query);
     const re2 = b.addStaticLibrary(.{
@@ -84,36 +93,40 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
-    re2.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "third_party/re2")).items,
-    });
+    // re2.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "third_party/re2")).items,
+    // });
+    re2.addCSourceFiles((try iterateFiles(b, "third_party/re2")).items, &.{});
     _ = try basicSetup(b, re2);
     const skiplist = b.addStaticLibrary(.{
         .name = "skiplistlib",
         .target = target,
         .optimize = optimize,
     });
-    skiplist.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "third_party/skiplist")).items,
-    });
+    // skiplist.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "third_party/skiplist")).items,
+    // });
+    skiplist.addCSourceFiles((try iterateFiles(b, "third_party/skiplist")).items, &.{});
     _ = try basicSetup(b, skiplist);
     const utf8proc = b.addStaticLibrary(.{
         .name = "utf8proc",
         .target = target,
         .optimize = optimize,
     });
-    utf8proc.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "third_party/utf8proc")).items,
-    });
+    // utf8proc.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "third_party/utf8proc")).items,
+    // });
+    utf8proc.addCSourceFiles((try iterateFiles(b, "third_party/utf8proc")).items, &.{});
     _ = try basicSetup(b, utf8proc);
     const httpfs_extension = b.addStaticLibrary(.{
         .name = "httpfs_extension",
         .target = target,
         .optimize = optimize,
     });
-    httpfs_extension.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "extension/httpfs")).items,
-    });
+    // httpfs_extension.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "extension/httpfs")).items,
+    // });
+    httpfs_extension.addCSourceFiles((try iterateFiles(b, "extension/httpfs")).items, &.{});
     httpfs_extension.addIncludePath(std.Build.LazyPath.relative("extension/httpfs/include"));
     httpfs_extension.addIncludePath(std.Build.LazyPath.relative("third_party/httplib"));
     httpfs_extension.addIncludePath(std.Build.LazyPath.relative("third_party/openssl/include"));
@@ -124,9 +137,10 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
-    icu_extension.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "extension/icu")).items,
-    });
+    // icu_extension.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "extension/icu")).items,
+    // });
+    icu_extension.addCSourceFiles((try iterateFiles(b, "extension/icu")).items, &.{});
     icu_extension.addIncludePath(std.Build.LazyPath.relative("extension/icu/include"));
     icu_extension.addIncludePath(std.Build.LazyPath.relative("extension/icu/third_party/icu/common"));
     icu_extension.addIncludePath(std.Build.LazyPath.relative("extension/icu/third_party/icu/i18n"));
@@ -137,21 +151,26 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
-    parquet_extension.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "extension/parquet")).items,
-    });
-    parquet_extension.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "third_party/parquet")).items,
-    });
-    parquet_extension.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "third_party/snappy")).items,
-    });
-    parquet_extension.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "third_party/thrift")).items,
-    });
-    parquet_extension.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "third_party/zstd")).items,
-    });
+    // parquet_extension.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "extension/parquet")).items,
+    // });
+    // parquet_extension.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "third_party/parquet")).items,
+    // });
+    // parquet_extension.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "third_party/snappy")).items,
+    // });
+    // parquet_extension.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "third_party/thrift")).items,
+    // });
+    // parquet_extension.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "third_party/zstd")).items,
+    // });
+    parquet_extension.addCSourceFiles((try iterateFiles(b, "extension/parquet")).items, &.{});
+    parquet_extension.addCSourceFiles((try iterateFiles(b, "third_party/parquet")).items, &.{});
+    parquet_extension.addCSourceFiles((try iterateFiles(b, "third_party/snappy")).items, &.{});
+    parquet_extension.addCSourceFiles((try iterateFiles(b, "third_party/thrift")).items, &.{});
+    parquet_extension.addCSourceFiles((try iterateFiles(b, "third_party/zstd")).items, &.{});
     parquet_extension.addIncludePath(std.Build.LazyPath.relative("extension/parquet/include"));
     parquet_extension.addIncludePath(std.Build.LazyPath.relative("third_party/parquet"));
     parquet_extension.addIncludePath(std.Build.LazyPath.relative("third_party/snappy"));
@@ -163,122 +182,136 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
-    catalog.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "src/catalog")).items,
-    });
+    // catalog.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "src/catalog")).items,
+    // });
+    catalog.addCSourceFiles((try iterateFiles(b, "src/catalog")).items, &.{});
     _ = try basicSetup(b, catalog);
     const common = b.addStaticLibrary(.{
         .name = "common",
         .target = target,
         .optimize = optimize,
     });
-    common.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "src/common")).items,
-    });
+    // common.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "src/common")).items,
+    // });
+    common.addCSourceFiles((try iterateFiles(b, "src/common")).items, &.{});
     _ = try basicSetup(b, common);
     const core_funtions = b.addStaticLibrary(.{
         .name = "core_funtions",
         .target = target,
         .optimize = optimize,
     });
-    core_funtions.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "src/core_functions")).items,
-    });
+    // core_funtions.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "src/core_functions")).items,
+    // });
+    core_funtions.addCSourceFiles((try iterateFiles(b, "src/core_functions")).items, &.{});
     _ = try basicSetup(b, core_funtions);
     const execution = b.addStaticLibrary(.{
         .name = "execution",
         .target = target,
         .optimize = optimize,
     });
-    execution.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "src/execution")).items,
-    });
+    // execution.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "src/execution")).items,
+    // });
+    execution.addCSourceFiles((try iterateFiles(b, "src/execution")).items, &.{});
     _ = try basicSetup(b, execution);
     const function = b.addStaticLibrary(.{
         .name = "function",
         .target = target,
         .optimize = optimize,
     });
-    function.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "src/function")).items,
-    });
+    // function.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "src/function")).items,
+    // });
+    function.addCSourceFiles((try iterateFiles(b, "src/function")).items, &.{});
     _ = try basicSetup(b, function);
     const main = b.addStaticLibrary(.{
         .name = "main",
         .target = target,
         .optimize = optimize,
     });
-    main.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "src/main")).items,
-    });
+    // main.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "src/main")).items,
+    // });
+    main.addCSourceFiles((try iterateFiles(b, "src/main")).items, &.{});
     _ = try basicSetup(b, main);
     const optimizer = b.addStaticLibrary(.{
         .name = "optimizer",
         .target = target,
         .optimize = optimize,
     });
-    optimizer.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "src/optimizer")).items,
-    });
+    // optimizer.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "src/optimizer")).items,
+    // });
+    optimizer.addCSourceFiles((try iterateFiles(b, "src/optimizer")).items, &.{});
     _ = try basicSetup(b, optimizer);
     const parallel = b.addStaticLibrary(.{
         .name = "parallel",
         .target = target,
         .optimize = optimize,
     });
-    parallel.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "src/parallel")).items,
-    });
+    // parallel.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "src/parallel")).items,
+    // });
+    parallel.addCSourceFiles((try iterateFiles(b, "src/parallel")).items, &.{});
     _ = try basicSetup(b, parallel);
     const parser = b.addStaticLibrary(.{
         .name = "parser",
         .target = target,
         .optimize = optimize,
     });
-    parser.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "src/parser")).items,
-    });
+    // parser.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "src/parser")).items,
+    // });
+    parser.addCSourceFiles((try iterateFiles(b, "src/parser")).items, &.{});
     _ = try basicSetup(b, parser);
     const planner = b.addStaticLibrary(.{
         .name = "planner",
         .target = target,
         .optimize = optimize,
     });
-    planner.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "src/planner")).items,
-    });
+    // planner.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "src/planner")).items,
+    // });
+    planner.addCSourceFiles((try iterateFiles(b, "src/planner")).items, &.{});
     _ = try basicSetup(b, planner);
     const storage = b.addStaticLibrary(.{
         .name = "storage",
         .target = target,
         .optimize = optimize,
     });
-    storage.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "src/storage")).items,
-    });
+    // storage.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "src/storage")).items,
+    // });
+    storage.addCSourceFiles((try iterateFiles(b, "src/storage")).items, &.{});
     _ = try basicSetup(b, storage);
     const transaction = b.addStaticLibrary(.{
         .name = "transaction",
         .target = target,
         .optimize = optimize,
     });
-    transaction.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "src/transaction")).items,
-    });
+    // transaction.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "src/transaction")).items,
+    // });
+    transaction.addCSourceFiles((try iterateFiles(b, "src/transaction")).items, &.{});
     _ = try basicSetup(b, transaction);
     const verification = b.addStaticLibrary(.{
         .name = "verification",
         .target = target,
         .optimize = optimize,
     });
-    verification.addCSourceFiles(.{
-        .files = (try iterateFiles(b, "src/verification")).items,
-    });
+    // verification.addCSourceFiles(.{
+    //     .files = (try iterateFiles(b, "src/verification")).items,
+    // });
+    verification.addCSourceFiles((try iterateFiles(b, "src/verification")).items, &.{});
     _ = try basicSetup(b, verification);
 }
 fn iterateFiles(b: *std.Build, path: []const u8) !std.ArrayList([]const u8) {
     var files = std.ArrayList([]const u8).init(b.allocator);
-    var dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
+    // var dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
+    var dir = try std.fs.cwd().openIterableDir(path, .{});
     defer dir.close();
     var walker = try dir.walk(b.allocator);
     defer walker.deinit();
@@ -331,7 +364,9 @@ fn basicSetup(b: *std.Build, in: *std.Build.Step.Compile) !void {
     in.defineCMacro("DUCKDB_BUILD_LIBRARY", null);
     in.linkLibC();
     in.linkLibCpp();
-    in.root_module.pic = true;
-    in.root_module.strip = true;
+    // in.root_module.pic = true;
+    // in.root_module.strip = true;
+    in.force_pic = true;
+    in.strip = true;
     b.installArtifact(in);
 }

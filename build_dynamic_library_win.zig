@@ -102,7 +102,9 @@ fn basicSetup(b: *std.Build, in: *std.Build.Step.Compile) !void {
     in.defineCMacro("DUCKDB_BUILD_LIBRARY", null);
     in.linkLibC();
     in.linkLibCpp();
-    in.root_module.pic = true;
-    in.root_module.strip = true;
+    // in.root_module.pic = true;
+    // in.root_module.strip = true;
+    in.force_pic = true;
+    in.strip = true;
     b.installArtifact(in);
 }
