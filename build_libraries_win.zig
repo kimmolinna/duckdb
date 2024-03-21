@@ -176,6 +176,7 @@ pub fn build(b: *std.Build) !void {
     parquet_extension.addIncludePath(std.Build.LazyPath.relative("third_party/snappy"));
     parquet_extension.addIncludePath(std.Build.LazyPath.relative("third_party/thrift"));
     parquet_extension.addIncludePath(std.Build.LazyPath.relative("third_party/zstd/include"));
+    parquet_extension.addIncludePath(std.Build.LazyPath.relative("third_party/lz4"));
     _ = try basicSetup(b, parquet_extension);
     const catalog = b.addStaticLibrary(.{
         .name = "catalog",
