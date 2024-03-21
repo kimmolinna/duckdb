@@ -30,6 +30,10 @@ public:
 	int64_t Read(FileHandle &handle, void *buffer, int64_t nr_bytes) override;
 	//! Write nr_bytes from the buffer into the file, moving the file pointer forward by nr_bytes.
 	int64_t Write(FileHandle &handle, void *buffer, int64_t nr_bytes) override;
+	//! Excise a range of the file. The file-system is free to deallocate this
+	//! range (sparse file support). Reads to the range will succeed but will return
+	//! undefined data.
+	bool Trim(FileHandle &handle, idx_t offset_bytes, idx_t length_bytes) override;
 
 	//! Returns the file size of a file handle, returns -1 on error
 	int64_t GetFileSize(FileHandle &handle) override;
@@ -89,6 +93,9 @@ public:
 	//! Returns the last Win32 error, in string format. Returns an empty string if there is no error, or on non-Windows
 	//! systems.
 	static std::string GetLastErrorAsString();
+
+	//! Checks a file is private (checks for 600 on linux/macos, TODO: currently always returns true on windows)
+	static bool IsPrivateFile(const string &path_p, FileOpener *opener);
 
 private:
 	//! Set the file pointer of a file handle to a specified location. Reads and writes will happen from this location
