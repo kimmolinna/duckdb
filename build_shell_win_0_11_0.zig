@@ -1,17 +1,14 @@
 const std = @import("std");
 const builtin = @import("builtin");
-
 pub fn build(b: *std.Build) !void {
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
     // means any target is allowed, and the default is native. Other options
     // for restricting supported target set are available.
     const target = b.standardTargetOptions(.{});
-
     // Standard release options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const optimize = b.standardOptimizeOption(.{});
-
     var child = std.ChildProcess.init(&[_][]const u8{ "python3.11", "scripts/generate_version_hpp.py" }, std.heap.page_allocator);
     try child.spawn();
     _ = try child.wait();
@@ -20,152 +17,99 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
-    // fastpforlib.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "third_party/fastpforlib")).items,
-    // });
     fastpforlib.addCSourceFiles((try iterateFiles(b, "third_party/fastpforlib")).items, &.{});
-
-    _ = try basicSetup(b, fastpforlib);
+    _ = try basicSetup(fastpforlib);
     const fmt = b.addStaticLibrary(.{
         .name = "fmt",
         .target = target,
         .optimize = optimize,
     });
-    // fmt.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "third_party/fmt")).items,
-    // });
     fmt.addCSourceFiles((try iterateFiles(b, "third_party/fmt")).items, &.{});
-
-    _ = try basicSetup(b, fmt);
+    _ = try basicSetup(fmt);
     const fsst = b.addStaticLibrary(.{
         .name = "fsst",
         .target = target,
         .optimize = optimize,
     });
-    // fsst.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "third_party/fsst")).items,
-    // });
     fsst.addCSourceFiles((try iterateFiles(b, "third_party/fsst")).items, &.{});
-    _ = try basicSetup(b, fsst);
+    _ = try basicSetup(fsst);
     const hyperloglog = b.addStaticLibrary(.{
         .name = "hyperloglog",
         .target = target,
         .optimize = optimize,
     });
-    // hyperloglog.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "third_party/hyperloglog")).items,
-    // });
     hyperloglog.addCSourceFiles((try iterateFiles(b, "third_party/hyperloglog")).items, &.{});
-    _ = try basicSetup(b, hyperloglog);
+    _ = try basicSetup(hyperloglog);
     const mbedtls = b.addStaticLibrary(.{
         .name = "mbedtls",
         .target = target,
         .optimize = optimize,
     });
-    // mbedtls.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "third_party/mbedtls")).items,
-    // });
     mbedtls.addCSourceFiles((try iterateFiles(b, "third_party/mbedtls")).items, &.{});
-    _ = try basicSetup(b, mbedtls);
+    _ = try basicSetup(mbedtls);
     const miniz = b.addStaticLibrary(.{
         .name = "miniz",
         .target = target,
         .optimize = optimize,
     });
-    // miniz.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "third_party/miniz")).items,
-    // });
     miniz.addCSourceFiles((try iterateFiles(b, "third_party/miniz")).items, &.{});
-    _ = try basicSetup(b, miniz);
+    _ = try basicSetup(miniz);
     const pg_query = b.addStaticLibrary(.{
         .name = "pg_query",
         .target = target,
         .optimize = optimize,
     });
-    // pg_query.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "third_party/libpg_query")).items,
-    // });
     pg_query.addCSourceFiles((try iterateFiles(b, "third_party/libpg_query")).items, &.{});
     pg_query.addIncludePath(std.Build.LazyPath.relative("third_party/libpg_query/include"));
-    _ = try basicSetup(b, pg_query);
+    _ = try basicSetup(pg_query);
     const re2 = b.addStaticLibrary(.{
         .name = "re2",
         .target = target,
         .optimize = optimize,
     });
-    // re2.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "third_party/re2")).items,
-    // });
     re2.addCSourceFiles((try iterateFiles(b, "third_party/re2")).items, &.{});
-    _ = try basicSetup(b, re2);
+    _ = try basicSetup(re2);
     const skiplist = b.addStaticLibrary(.{
         .name = "skiplistlib",
         .target = target,
         .optimize = optimize,
     });
-    // skiplist.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "third_party/skiplist")).items,
-    // });
     skiplist.addCSourceFiles((try iterateFiles(b, "third_party/skiplist")).items, &.{});
-    _ = try basicSetup(b, skiplist);
+    _ = try basicSetup(skiplist);
     const utf8proc = b.addStaticLibrary(.{
         .name = "utf8proc",
         .target = target,
         .optimize = optimize,
     });
-    // utf8proc.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "third_party/utf8proc")).items,
-    // });
     utf8proc.addCSourceFiles((try iterateFiles(b, "third_party/utf8proc")).items, &.{});
-    _ = try basicSetup(b, utf8proc);
+    _ = try basicSetup(utf8proc);
     const httpfs_extension = b.addStaticLibrary(.{
         .name = "httpfs_extension",
         .target = target,
         .optimize = optimize,
     });
-    // httpfs_extension.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "extension/httpfs")).items,
-    // });
     httpfs_extension.addCSourceFiles((try iterateFiles(b, "extension/httpfs")).items, &.{});
     httpfs_extension.addIncludePath(std.Build.LazyPath.relative("extension/httpfs/include"));
     httpfs_extension.addIncludePath(std.Build.LazyPath.relative("third_party/httplib"));
     httpfs_extension.addIncludePath(std.Build.LazyPath.relative("third_party/openssl/include"));
     httpfs_extension.addIncludePath(std.Build.LazyPath.relative("third_party/picohash"));
-    _ = try basicSetup(b, httpfs_extension);
+    _ = try basicSetup(httpfs_extension);
     const icu_extension = b.addStaticLibrary(.{
         .name = "icu_extension",
         .target = target,
         .optimize = optimize,
     });
-    // icu_extension.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "extension/icu")).items,
-    // });
     icu_extension.addCSourceFiles((try iterateFiles(b, "extension/icu")).items, &.{});
     icu_extension.addIncludePath(std.Build.LazyPath.relative("extension/icu/include"));
     icu_extension.addIncludePath(std.Build.LazyPath.relative("extension/icu/third_party/icu/common"));
     icu_extension.addIncludePath(std.Build.LazyPath.relative("extension/icu/third_party/icu/i18n"));
-    _ = try basicSetup(b, icu_extension);
+    _ = try basicSetup(icu_extension);
 
     const parquet_extension = b.addStaticLibrary(.{
         .name = "parquet_extension",
         .target = target,
         .optimize = optimize,
     });
-    // parquet_extension.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "extension/parquet")).items,
-    // });
-    // parquet_extension.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "third_party/parquet")).items,
-    // });
-    // parquet_extension.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "third_party/snappy")).items,
-    // });
-    // parquet_extension.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "third_party/thrift")).items,
-    // });
-    // parquet_extension.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "third_party/zstd")).items,
-    // });
     parquet_extension.addCSourceFiles((try iterateFiles(b, "extension/parquet")).items, &.{});
     parquet_extension.addCSourceFiles((try iterateFiles(b, "third_party/parquet")).items, &.{});
     parquet_extension.addCSourceFiles((try iterateFiles(b, "third_party/snappy")).items, &.{});
@@ -177,143 +121,234 @@ pub fn build(b: *std.Build) !void {
     parquet_extension.addIncludePath(std.Build.LazyPath.relative("third_party/thrift"));
     parquet_extension.addIncludePath(std.Build.LazyPath.relative("third_party/zstd/include"));
     parquet_extension.addIncludePath(std.Build.LazyPath.relative("third_party/lz4"));
-    _ = try basicSetup(b, parquet_extension);
+    _ = try basicSetup(parquet_extension);
     const catalog = b.addStaticLibrary(.{
         .name = "catalog",
         .target = target,
         .optimize = optimize,
     });
-    // catalog.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "src/catalog")).items,
-    // });
     catalog.addCSourceFiles((try iterateFiles(b, "src/catalog")).items, &.{});
-    _ = try basicSetup(b, catalog);
+    _ = try basicSetup(catalog);
     const common = b.addStaticLibrary(.{
         .name = "common",
         .target = target,
         .optimize = optimize,
     });
-    // common.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "src/common")).items,
-    // });
     common.addCSourceFiles((try iterateFiles(b, "src/common")).items, &.{});
-    _ = try basicSetup(b, common);
+    _ = try basicSetup(common);
     const core_funtions = b.addStaticLibrary(.{
         .name = "core_funtions",
         .target = target,
         .optimize = optimize,
     });
-    // core_funtions.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "src/core_functions")).items,
-    // });
     core_funtions.addCSourceFiles((try iterateFiles(b, "src/core_functions")).items, &.{});
-    _ = try basicSetup(b, core_funtions);
+    _ = try basicSetup(core_funtions);
     const execution = b.addStaticLibrary(.{
         .name = "execution",
         .target = target,
         .optimize = optimize,
     });
-    // execution.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "src/execution")).items,
-    // });
     execution.addCSourceFiles((try iterateFiles(b, "src/execution")).items, &.{});
-    _ = try basicSetup(b, execution);
+    _ = try basicSetup(execution);
     const function = b.addStaticLibrary(.{
         .name = "function",
         .target = target,
         .optimize = optimize,
     });
-    // function.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "src/function")).items,
-    // });
     function.addCSourceFiles((try iterateFiles(b, "src/function")).items, &.{});
-    _ = try basicSetup(b, function);
+    _ = try basicSetup(function);
     const main = b.addStaticLibrary(.{
         .name = "main",
         .target = target,
         .optimize = optimize,
     });
-    // main.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "src/main")).items,
-    // });
     main.addCSourceFiles((try iterateFiles(b, "src/main")).items, &.{});
-    _ = try basicSetup(b, main);
+    _ = try basicSetup(main);
     const optimizer = b.addStaticLibrary(.{
         .name = "optimizer",
         .target = target,
         .optimize = optimize,
     });
-    // optimizer.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "src/optimizer")).items,
-    // });
     optimizer.addCSourceFiles((try iterateFiles(b, "src/optimizer")).items, &.{});
-    _ = try basicSetup(b, optimizer);
+    _ = try basicSetup(optimizer);
     const parallel = b.addStaticLibrary(.{
         .name = "parallel",
         .target = target,
         .optimize = optimize,
     });
-    // parallel.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "src/parallel")).items,
-    // });
     parallel.addCSourceFiles((try iterateFiles(b, "src/parallel")).items, &.{});
-    _ = try basicSetup(b, parallel);
+    _ = try basicSetup(parallel);
     const parser = b.addStaticLibrary(.{
         .name = "parser",
         .target = target,
         .optimize = optimize,
     });
-    // parser.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "src/parser")).items,
-    // });
     parser.addCSourceFiles((try iterateFiles(b, "src/parser")).items, &.{});
-    _ = try basicSetup(b, parser);
+    _ = try basicSetup(parser);
     const planner = b.addStaticLibrary(.{
         .name = "planner",
         .target = target,
         .optimize = optimize,
     });
-    // planner.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "src/planner")).items,
-    // });
     planner.addCSourceFiles((try iterateFiles(b, "src/planner")).items, &.{});
-    _ = try basicSetup(b, planner);
+    _ = try basicSetup(planner);
     const storage = b.addStaticLibrary(.{
         .name = "storage",
         .target = target,
         .optimize = optimize,
     });
-    // storage.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "src/storage")).items,
-    // });
     storage.addCSourceFiles((try iterateFiles(b, "src/storage")).items, &.{});
-    _ = try basicSetup(b, storage);
+    _ = try basicSetup(storage);
     const transaction = b.addStaticLibrary(.{
         .name = "transaction",
         .target = target,
         .optimize = optimize,
     });
-    // transaction.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "src/transaction")).items,
-    // });
     transaction.addCSourceFiles((try iterateFiles(b, "src/transaction")).items, &.{});
-    _ = try basicSetup(b, transaction);
+    _ = try basicSetup(transaction);
     const verification = b.addStaticLibrary(.{
         .name = "verification",
         .target = target,
         .optimize = optimize,
     });
-    // verification.addCSourceFiles(.{
-    //     .files = (try iterateFiles(b, "src/verification")).items,
-    // });
     verification.addCSourceFiles((try iterateFiles(b, "src/verification")).items, &.{});
-    _ = try basicSetup(b, verification);
+    _ = try basicSetup(verification);
+    const duckdb = b.addStaticLibrary(.{
+        .name = "duckdb_static",
+        .target = target,
+        .optimize = optimize,
+    });
+    duckdb.addIncludePath(std.Build.LazyPath.relative("extension/httpfs/include"));
+    duckdb.addIncludePath(std.Build.LazyPath.relative("extension/icu/include"));
+    duckdb.addIncludePath(std.Build.LazyPath.relative("extension/icu/third_party/icu/common"));
+    duckdb.addIncludePath(std.Build.LazyPath.relative("extension/icu/third_party/icu/i18n"));
+    duckdb.addIncludePath(std.Build.LazyPath.relative("extension/parquet/include"));
+    duckdb.addIncludePath(std.Build.LazyPath.relative("third_party/httplib"));
+    duckdb.addIncludePath(std.Build.LazyPath.relative("third_party/libpg_query/include"));
+    duckdb.addIncludePath(std.Build.LazyPath.relative("src/duckdb/execution/index/art/"));
+    duckdb.addIncludePath(std.Build.LazyPath.relative("third_party/openssl/include"));
+    duckdb.defineCMacro("BUILD_HTTPFS_EXTENSION", "TRUE");
+    duckdb.defineCMacro("BUILD_ICU_EXTENSION", "TRUE");
+    duckdb.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
+    duckdb.defineCMacro("DUCKDB_MAIN_LIBRARY", null);
+    duckdb.defineCMacro("DUCKDB_USE_STANDARD_ASSERT", null);
+    duckdb.defineCMacro("DUCKDB", null);
+    duckdb.defineCMacro("SQLITE_OMIT_LOAD_EXTENSION", "1");
+    duckdb.linkLibrary(catalog);
+    duckdb.linkLibrary(common);
+    duckdb.linkLibrary(core_funtions);
+    duckdb.linkLibrary(execution);
+    duckdb.linkLibrary(fastpforlib);
+    duckdb.linkLibrary(fmt);
+    duckdb.linkLibrary(fsst);
+    duckdb.linkLibrary(function);
+    duckdb.linkLibrary(httpfs_extension);
+    duckdb.linkLibrary(hyperloglog);
+    duckdb.linkLibrary(icu_extension);
+    duckdb.linkLibrary(main);
+    duckdb.linkLibrary(mbedtls);
+    duckdb.linkLibrary(miniz);
+    duckdb.linkLibrary(optimizer);
+    duckdb.linkLibrary(parallel);
+    duckdb.linkLibrary(parquet_extension);
+    duckdb.linkLibrary(parser);
+    duckdb.linkLibrary(pg_query);
+    duckdb.linkLibrary(planner);
+    duckdb.linkLibrary(re2);
+    duckdb.linkLibrary(skiplist);
+    duckdb.linkLibrary(storage);
+    duckdb.linkLibrary(transaction);
+    duckdb.linkLibrary(utf8proc);
+    duckdb.linkLibrary(verification);
+    duckdb.linkLibC();
+    _ = try basicSetup(duckdb);
+    const sqlite_api = b.addStaticLibrary(.{
+        .name = "sqlite_api",
+        .target = target,
+        .optimize = optimize,
+    });
+    sqlite_api.addCSourceFiles((try iterateFiles(b, "tools/sqlite3_api_wrapper")).items, &.{});
+    sqlite_api.addIncludePath(std.Build.LazyPath.relative("tools/sqlite3_api_wrapper/sqlite3"));
+    sqlite_api.addCSourceFile(.{ .file = .{ .path = "tools/sqlite3_api_wrapper/sqlite3/os_win.c" }, .flags = &.{"-Wno-error=implicit-function-declaration"} });
+    sqlite_api.addIncludePath(std.Build.LazyPath.relative("extension"));
+    sqlite_api.addIncludePath(std.Build.LazyPath.relative("extension/httpfs/include"));
+    sqlite_api.addIncludePath(std.Build.LazyPath.relative("extension/icu/include"));
+    sqlite_api.addIncludePath(std.Build.LazyPath.relative("extension/icu/third_party/icu/common"));
+    sqlite_api.addIncludePath(std.Build.LazyPath.relative("extension/icu/third_party/icu/i18n"));
+    sqlite_api.addIncludePath(std.Build.LazyPath.relative("extension/parquet/include"));
+    sqlite_api.addIncludePath(std.Build.LazyPath.relative("third_party/catch"));
+    sqlite_api.addIncludePath(std.Build.LazyPath.relative("third_party/libpg_query/include"));
+    sqlite_api.addIncludePath(std.Build.LazyPath.relative("tools/sqlite3_api_wrapper/include"));
+    sqlite_api.addIncludePath(std.Build.LazyPath.relative("tools/sqlite3_api_wrapper/sqlite3_udf_api/include"));
+    sqlite_api.addIncludePath(std.Build.LazyPath.relative("tools/sqlite3_api_wrapper/test/include"));
+    sqlite_api.defineCMacro("BUILD_HTTPFS_EXTENSION", "ON");
+    sqlite_api.defineCMacro("BUILD_ICU_EXTENSION", "ON");
+    sqlite_api.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
+    sqlite_api.defineCMacro("SQLITE_SHELL_IS_UTF8", null);
+    sqlite_api.defineCMacro("USE_DUCKDB_SHELL_WRAPPER", "TRUE");
+    sqlite_api.linkLibrary(utf8proc);
+    sqlite_api.linkLibrary(duckdb);
+    sqlite_api.linkLibC();
+    _ = try basicSetup(sqlite_api);
+    const shell = b.addExecutable(.{
+        .name = "duckdb",
+        .target = target,
+        .optimize = optimize,
+    });
+    shell.addCSourceFile(.{ .file = std.Build.LazyPath.relative("tools/shell/shell.c"), .flags = &.{} });
+    shell.addIncludePath(std.Build.LazyPath.relative("extension/httpfs/include"));
+    shell.addIncludePath(std.Build.LazyPath.relative("extension/icu/include"));
+    shell.addIncludePath(std.Build.LazyPath.relative("extension/icu/third_party/icu/common"));
+    shell.addIncludePath(std.Build.LazyPath.relative("extension/icu/third_party/icu/i18n"));
+    shell.addIncludePath(std.Build.LazyPath.relative("extension/parquet/include"));
+    shell.addIncludePath(std.Build.LazyPath.relative("third_party/httplib"));
+    shell.addIncludePath(std.Build.LazyPath.relative("third_party/libpg_query/include"));
+    shell.addIncludePath(std.Build.LazyPath.relative("third_party/openssl/include"));
+    shell.addIncludePath(std.Build.LazyPath.relative("tools/shell/include"));
+    shell.addIncludePath(std.Build.LazyPath.relative("tools/sqlite3_api_wrapper/include"));
+    shell.defineCMacro("DUCKDB_BUILD_LIBRARY", null);
+    shell.defineCMacro("SQLITE_OMIT_LOAD_EXTENSION", "1");
+    shell.addIncludePath(std.Build.LazyPath.relative("third_party/openssl/include"));
+    shell.addObjectFile(std.Build.LazyPath.relative("third_party/openssl/lib/libcrypto.lib"));
+    shell.addObjectFile(std.Build.LazyPath.relative("third_party/openssl/lib/libssl.lib"));
+    shell.addObjectFile(std.Build.LazyPath.relative("third_party/win64/ws2_32.lib"));
+    shell.addObjectFile(std.Build.LazyPath.relative("third_party/win64/crypt32.lib"));
+    shell.addObjectFile(std.Build.LazyPath.relative("third_party/win64/cryptui.lib"));
+    shell.addObjectFile(std.Build.LazyPath.relative("third_party/win64/rstrtmgr.lib"));
+    shell.step.dependOn(&b.addInstallFileWithDir(
+        .{ .path = "third_party/openssl/lib/libssl-3-x64.dll" },
+        .bin,
+        "libssl-3-x64.dll",
+    ).step);
+    shell.step.dependOn(&b.addInstallFileWithDir(
+        .{ .path = "third_party/openssl/lib/libcrypto-3-x64.dll" },
+        .bin,
+        "libcrypto-3-x64.dll",
+    ).step);
+    shell.linkLibrary(duckdb);
+    shell.linkLibrary(utf8proc);
+    shell.linkLibrary(fastpforlib);
+    shell.linkLibrary(fmt);
+    shell.linkLibrary(fsst);
+    shell.linkLibrary(hyperloglog);
+    shell.linkLibrary(mbedtls);
+    shell.linkLibrary(miniz);
+    shell.linkLibrary(pg_query);
+    shell.linkLibrary(re2);
+    shell.linkLibrary(skiplist);
+    shell.linkLibrary(utf8proc);
+    shell.linkLibrary(parquet_extension);
+    shell.linkLibrary(httpfs_extension);
+    shell.linkLibrary(icu_extension);
+    shell.linkLibrary(sqlite_api);
+    shell.linkLibC();
+    shell.want_lto = false;
+    _ = try basicSetup(shell);
+    b.installArtifact(shell);
 }
 fn iterateFiles(b: *std.Build, path: []const u8) !std.ArrayList([]const u8) {
     var files = std.ArrayList([]const u8).init(b.allocator);
-    // var dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
     var dir = try std.fs.cwd().openIterableDir(path, .{});
-    defer dir.close();
     var walker = try dir.walk(b.allocator);
     defer walker.deinit();
     var out: [256]u8 = undefined;
@@ -338,7 +373,7 @@ fn iterateFiles(b: *std.Build, path: []const u8) !std.ArrayList([]const u8) {
     }
     return files;
 }
-fn basicSetup(b: *std.Build, in: *std.Build.Step.Compile) !void {
+fn basicSetup(in: *std.Build.Step.Compile) !void {
     const include_dirs = [_][]const u8{
         "src/include",
         "third_party/concurrentqueue",
@@ -363,11 +398,7 @@ fn basicSetup(b: *std.Build, in: *std.Build.Step.Compile) !void {
         in.addIncludePath(std.Build.LazyPath.relative(include_dir));
     }
     in.defineCMacro("DUCKDB_BUILD_LIBRARY", null);
-    in.linkLibC();
     in.linkLibCpp();
-    // in.root_module.pic = true;
-    // in.root_module.strip = true;
     in.force_pic = true;
     in.strip = true;
-    b.installArtifact(in);
 }

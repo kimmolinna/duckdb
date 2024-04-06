@@ -23,18 +23,13 @@ pub fn build(b: *std.Build) !void {
     libduckdb.addIncludePath(std.Build.LazyPath.relative("third_party/httplib"));
     libduckdb.addIncludePath(std.Build.LazyPath.relative("third_party/libpg_query/include"));
     libduckdb.addIncludePath(std.Build.LazyPath.relative("third_party/openssl/include"));
-    libduckdb.defineCMacro("BUILD_HTTPFS_EXTENSION", "TRUE");
-    libduckdb.defineCMacro("BUILD_ICU_EXTENSION", "TRUE");
-    libduckdb.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
-    libduckdb.defineCMacro("duckdb_EXPORTS", null);
-    libduckdb.defineCMacro("DUCKDB_MAIN_LIBRARY", null);
-    libduckdb.defineCMacro("DUCKDB", null);
     libduckdb.addIncludePath(std.Build.LazyPath.relative("third_party/openssl/include"));
     libduckdb.addObjectFile(std.Build.LazyPath.relative("third_party/openssl/lib/libcrypto.lib"));
     libduckdb.addObjectFile(std.Build.LazyPath.relative("third_party/openssl/lib/libssl.lib"));
     libduckdb.addObjectFile(std.Build.LazyPath.relative("third_party/win64/ws2_32.lib"));
     libduckdb.addObjectFile(std.Build.LazyPath.relative("third_party/win64/crypt32.lib"));
     libduckdb.addObjectFile(std.Build.LazyPath.relative("third_party/win64/cryptui.lib"));
+    libduckdb.addObjectFile(std.Build.LazyPath.relative("third_party/win64/rstrtmgr.lib"));
     libduckdb.step.dependOn(&b.addInstallFileWithDir(
         .{ .path = "third_party/openssl/lib/libssl-3-x64.dll" },
         .bin,
@@ -57,8 +52,8 @@ pub fn build(b: *std.Build) !void {
     libduckdb.linkSystemLibrary("httpfs_extension");
     libduckdb.linkSystemLibrary("hyperloglog");
     libduckdb.linkSystemLibrary("icu_extension");
-    libduckdb.linkSystemLibrary("main");
     libduckdb.linkSystemLibrary("mbedtls");
+    libduckdb.linkSystemLibrary("main");
     libduckdb.linkSystemLibrary("miniz");
     libduckdb.linkSystemLibrary("optimizer");
     libduckdb.linkSystemLibrary("parallel");
@@ -72,7 +67,6 @@ pub fn build(b: *std.Build) !void {
     libduckdb.linkSystemLibrary("transaction");
     libduckdb.linkSystemLibrary("utf8proc");
     libduckdb.linkSystemLibrary("verification");
-    libduckdb.linkLibC();
     _ = try basicSetup(b, libduckdb);
 }
 fn basicSetup(b: *std.Build, in: *std.Build.Step.Compile) !void {
@@ -99,12 +93,16 @@ fn basicSetup(b: *std.Build, in: *std.Build.Step.Compile) !void {
     for (include_dirs) |include_dir| {
         in.addIncludePath(std.Build.LazyPath.relative(include_dir));
     }
+    in.defineCMacro("BUILD_HTTPFS_EXTENSION", "TRUE");
+    in.defineCMacro("BUILD_ICU_EXTENSION", "TRUE");
+    in.defineCMacro("BUILD_PARQUET_EXTENSION", "TRUE");
+    in.defineCMacro("DUCKDB_MAIN_LIBRARY", null);
     in.defineCMacro("DUCKDB_BUILD_LIBRARY", null);
+    in.defineCMacro("_WIN32", null);
+    in.defineCMacro("DUCKDB", null);
     in.linkLibC();
     in.linkLibCpp();
-    // in.root_module.pic = true;
-    // in.root_module.strip = true;
-    in.force_pic = true;
-    in.strip = true;
+    in.root_module.pic = true;
+    in.root_module.strip = true;
     b.installArtifact(in);
 }
