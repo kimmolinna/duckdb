@@ -126,12 +126,20 @@ Catalog &AttachedDatabase::ParentCatalog() {
 	return *parent_catalog;
 }
 
+const Catalog &AttachedDatabase::ParentCatalog() const {
+	return *parent_catalog;
+}
+
 bool AttachedDatabase::IsInitialDatabase() const {
 	return is_initial_database;
 }
 
 void AttachedDatabase::SetInitialDatabase() {
 	is_initial_database = true;
+}
+
+void AttachedDatabase::SetReadOnlyDatabase() {
+	type = AttachedDatabaseType::READ_ONLY_DATABASE;
 }
 
 void AttachedDatabase::Close() {
@@ -160,9 +168,11 @@ void AttachedDatabase::Close() {
 			if (!config.options.checkpoint_on_shutdown) {
 				return;
 			}
-			storage->CreateCheckpoint(true);
+			CheckpointOptions options;
+			options.wal_action = CheckpointWALAction::DELETE_WAL;
+			storage->CreateCheckpoint(options);
 		}
-	} catch (...) {
+	} catch (...) { // NOLINT
 	}
 }
 
