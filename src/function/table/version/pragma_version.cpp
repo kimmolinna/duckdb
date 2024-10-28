@@ -2,7 +2,7 @@
 #include "duckdb/main/database.hpp"
 #include "duckdb/function/pragma/version.hpp"
 #include "duckdb/common/string_util.hpp"
-#include "duckdb/common/platform.h"
+#include "duckdb/common/platform.hpp"
 
 #include <cstdint>
 
